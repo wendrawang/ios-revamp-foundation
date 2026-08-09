@@ -1,0 +1,10 @@
+.DS_Store
+DerivedData/
+.derived/
+.build/
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcresult
