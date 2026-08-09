@@ -1,0 +1,23 @@
+# Architecture guardrails
+
+- Work only inside this repository.
+- Keep exactly two primary `NavigationStack`s: unauthenticated and authenticated.
+- Do not create a giant global route enum. Domains own value routes.
+- Insert concrete feature routes into `NavigationPath`; never store Views, ViewModels, services, repositories, closures, or sensitive models there.
+- All path mutation goes through the app navigation stores. Reconcile SwiftUI binding reductions with route metadata.
+- Features emit typed outputs for cross-domain navigation and never import unrelated feature implementations.
+- Routers and navigation stores perform no networking or business inquiries.
+- Use constructor injection. Do not add a service locator or production-building default initializer.
+- Business services remain domain-owned. Core modules contain only cross-cutting technical infrastructure.
+- Do not add `Common`, `Utils`, shared-model dumping grounds, or a package per screen.
+- Apply the Rule of 2 before promoting a business value type to a shared module.
+- Avoid routine `AnyView`, unnecessary `UIHostingController`, and heavy work in `View.body`.
+- Backend codes and copy map through whitelisted typed frontend actions; backend values cannot instantiate routes or types.
+- All app-link recognition goes through the app registry. Web host security remains a separate policy.
+- Every Task, timer, observer, camera, and WebKit handler requires an explicit lifetime and cancellation path.
+- Observe `scenePhase` only at app root; propagate normalized lifecycle state.
+- Navigation restoration is non-restorable by default and opt-in only after security review.
+- Keep accessibility identifiers stable and namespaced.
+- Logs and analytics must be structured, privacy-safe, and redacted.
+- Add or update deterministic tests whenever behavior or an architecture boundary changes.
+

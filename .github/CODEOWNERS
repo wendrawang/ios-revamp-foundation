@@ -1,0 +1,17 @@
+# Replace sample owners with real teams when repository ownership is assigned.
+/App/ @wendrawang
+/Packages/PlatformKit/ @wendrawang
+/Packages/DesignSystem/ @wendrawang
+/Packages/SecureWebKit/ @wendrawang
+/Packages/Features/AuthenticationFeature/ @wendrawang
+/Packages/Features/DashboardFeature/ @wendrawang
+/Packages/Features/FinancialHubFeature/ @wendrawang
+/Packages/Features/TransferFeature/ @wendrawang
+/Packages/Features/WealthFeature/ @wendrawang
+/Packages/Features/ScanFeature/ @wendrawang
+/Packages/Features/RewardsFeature/ @wendrawang
+/Packages/Features/MoreFeature/ @wendrawang
+/Packages/Features/UpgradeServiceFeature/ @wendrawang
+/AGENTS.md @wendrawang
+/Docs/Architecture.md @wendrawang
+
