@@ -19,8 +19,14 @@ let package = Package(
             ],
             path: "Sources"
         ),
-        .testTarget(name: "AuthenticationFeatureTests", dependencies: ["AuthenticationFeature"], path: "Tests"),
+        .testTarget(
+            name: "AuthenticationFeatureTests",
+            dependencies: [
+                "AuthenticationFeature",
+                .product(name: "CoreSession", package: "PlatformKit"),
+            ],
+            path: "Tests"
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
-

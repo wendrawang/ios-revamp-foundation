@@ -1,6 +1,43 @@
 import AuthenticationFeature
+import CoreSession
 import Foundation
 import Testing
+
+private enum StubAuthenticationMode: Sendable {
+    case success(SessionCredentials)
+    case failure
+    case suspended
+}
+
+private struct StubAuthenticator: Authenticating {
+    let mode: StubAuthenticationMode
+
+    func authenticate(password: String) async throws -> SessionCredentials {
+        switch mode {
+        case let .success(credentials):
+            return credentials
+        case .failure:
+            throw AuthenticationError.invalidCredentials
+        case .suspended:
+            try await Task.sleep(nanoseconds: 2_000_000_000)
+            throw CancellationError()
+        }
+    }
+}
+
+private final class WeakReference<Object: AnyObject> {
+    weak var value: Object?
+    init(_ value: Object?) { self.value = value }
+}
+
+@MainActor
+private func waitUntil(_ condition: () -> Bool) async throws {
+    for _ in 0..<100 {
+        if condition() { return }
+        try await Task.sleep(nanoseconds: 5_000_000)
+    }
+    Issue.record("Timed out waiting for view-model state")
+}
 
 @Test func registrationContinuationDeepLinkParses() {
     let url = URL(string: "iosrevamp://registration/continue?token=demo")!
@@ -12,3 +49,65 @@ import Testing
     #expect(AuthenticationDeepLinkParser().parse(url) == nil)
 }
 
+@Test func fakeAuthenticationRejectsEmptyPassword() async {
+    do {
+        _ = try await FakeAuthenticationService().authenticate(password: "")
+        Issue.record("Expected empty-password failure")
+    } catch let error as AuthenticationError {
+        #expect(error == .emptyPassword)
+    } catch {
+        Issue.record("Unexpected error: \(error)")
+    }
+}
+
+@MainActor
+@Test func loginViewModelPublishesSuccessfulOutput() async throws {
+    let credentials = SessionCredentials(accessToken: "a", refreshToken: "r", userID: "u")
+    var receivedOutput: AuthenticationOutput?
+    let viewModel = LoginViewModel(
+        authenticator: StubAuthenticator(mode: .success(credentials)),
+        output: { receivedOutput = $0 }
+    )
+
+    viewModel.submit()
+    try await waitUntil { receivedOutput != nil }
+
+    #expect(receivedOutput == .authenticated(credentials))
+    #expect(!viewModel.isLoading)
+    #expect(viewModel.errorMessage == nil)
+}
+
+@MainActor
+@Test func loginViewModelMapsFailureToSafeMessage() async throws {
+    let viewModel = LoginViewModel(
+        authenticator: StubAuthenticator(mode: .failure),
+        output: { _ in Issue.record("Failure must not authenticate") }
+    )
+
+    viewModel.submit()
+    try await waitUntil { viewModel.errorMessage != nil }
+
+    #expect(viewModel.errorMessage == "Unable to sign in.")
+    #expect(!viewModel.isLoading)
+}
+
+@MainActor
+@Test func loginCancellationStopsWorkAndViewModelReleases() async throws {
+    let weakViewModel = WeakReference<LoginViewModel>(nil)
+    var outputCount = 0
+    do {
+        let viewModel = LoginViewModel(
+            authenticator: StubAuthenticator(mode: .suspended),
+            output: { _ in outputCount += 1 }
+        )
+        weakViewModel.value = viewModel
+        viewModel.submit()
+        #expect(viewModel.isLoading)
+        viewModel.cancel()
+        #expect(!viewModel.isLoading)
+    }
+    try await Task.sleep(nanoseconds: 10_000_000)
+
+    #expect(outputCount == 0)
+    #expect(weakViewModel.value == nil)
+}

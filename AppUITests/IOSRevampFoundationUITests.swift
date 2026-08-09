@@ -18,6 +18,13 @@ final class IOSRevampFoundationUITests: XCTestCase {
         XCTAssertTrue(app.buttons["dashboard.transfer"].waitForExistence(timeout: 2))
     }
 
+    func testApplicationLaunchPerformance() {
+        measure(metrics: [XCTApplicationLaunchMetric(waitUntilResponsive: true)]) {
+            app.launch()
+            app.terminate()
+        }
+    }
+
     func testRegistrationContinuationDeepLink() {
         app.launchArguments += ["-deepLink", "iosrevamp://registration/continue?token=demo"]
         app.launch()

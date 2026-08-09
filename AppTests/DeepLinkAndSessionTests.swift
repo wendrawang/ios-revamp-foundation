@@ -1,6 +1,8 @@
 @testable import IOSRevampFoundation
 import AuthenticationFeature
 import CoreSession
+import TransferFeature
+import WealthFeature
 import XCTest
 
 @MainActor
@@ -59,6 +61,57 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertNil(weakFlow.value)
         XCTAssertNil(weakSession.value)
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 0)
+    }
+
+    func testRegistryRecognizesEverySupportedDomainAndRejectsUnknownURL() throws {
+        let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
+        let supported = [
+            "iosrevamp://registration/continue?token=demo",
+            "iosrevamp://rewards",
+            "iosrevamp://rewards/detail?id=reward-001",
+            "iosrevamp://wealth/product?id=wealth-001",
+        ]
+
+        for value in supported {
+            XCTAssertTrue(coordinator.recognizesDeepLink(try XCTUnwrap(URL(string: value))))
+        }
+        XCTAssertFalse(coordinator.recognizesDeepLink(
+            try XCTUnwrap(URL(string: "iosrevamp://unknown/path"))
+        ))
+    }
+
+    func testAuthenticatedRewardRootSelectsRewardsWithoutPushedDetail() async throws {
+        let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
+        coordinator.handleAuthenticationOutput(.authenticated(demoCredentials))
+        try await waitUntil { coordinator.phase == .authenticated && coordinator.authenticatedState == .ready }
+
+        coordinator.handleDeepLink(
+            try XCTUnwrap(URL(string: "iosrevamp://rewards")),
+            source: .universalOrAppURL
+        )
+        try await waitUntil { coordinator.authenticatedNavigation.selectedTab == .rewards }
+
+        XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 0)
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "tab.rewards")
+    }
+
+    func testSessionInvalidationCancelsOwnedTasks() async {
+        let container = AppContainer(isUITesting: true)
+        let session = SessionScope(
+            credentials: demoCredentials,
+            credentialManager: container.credentialManager,
+            transferService: FakeTransferService(),
+            wealthService: FakeWealthService()
+        )
+        let task = Task<Void, Never> {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+        }
+        session.retainBackgroundTask(task)
+
+        await session.invalidate()
+
+        XCTAssertTrue(task.isCancelled)
+        XCTAssertTrue(session.isInvalidated)
     }
 
     private var demoCredentials: SessionCredentials {

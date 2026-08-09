@@ -39,6 +39,19 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.topScreen.id, "transfer.landing")
     }
 
+    func testSameCountSystemEchoCannotReplaceStoreOwnedRoute() {
+        let store = AuthenticatedNavigationStore { _ in }
+        store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
+        var unrelatedSameCountPath = NavigationPath()
+        unrelatedSameCountPath.append(WealthRoute.product(id: "unexpected"))
+
+        store.reconcileSystemPath(unrelatedSameCountPath)
+
+        XCTAssertEqual(store.pathCount, 1)
+        XCTAssertEqual(store.metadata, [ScreenDescriptor(id: "transfer.landing")])
+        XCTAssertEqual(store.topScreen.id, "transfer.landing")
+    }
+
     func testPopToRootKeepsSelectedTabAsTopScreen() {
         let store = AuthenticatedNavigationStore { _ in }
         store.selectTab(.financial)

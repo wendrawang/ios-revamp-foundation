@@ -19,6 +19,21 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         XCTAssertNil(controller.current)
     }
 
+    func testGlobalPresentationsAreQueuedInOrder() {
+        let controller = GlobalPresentationController()
+        let first = GlobalPresentation(id: "first", title: "First", message: "One", primaryButtonTitle: "Next")
+        let second = GlobalPresentation(id: "second", title: "Second", message: "Two", primaryButtonTitle: "Close")
+
+        controller.present(first)
+        controller.present(second)
+        XCTAssertEqual(controller.current, first)
+
+        controller.dismiss()
+        XCTAssertEqual(controller.current, second)
+        controller.dismiss()
+        XCTAssertNil(controller.current)
+    }
+
     func testBlockerPriorityIsDeterministicAndNavigationIsUntouched() {
         let blockers = GlobalBlockerController()
         let navigation = AuthenticatedNavigationStore { _ in }
@@ -73,5 +88,18 @@ final class PresentationAndAnalyticsTests: XCTestCase {
             lifecycle: .foreground,
             isGloballyBlocked: true
         ).isOperational(.scan))
+    }
+
+    func testLifecycleAnalyticsOnlyTracksCommittedTransitions() {
+        let analytics = InMemoryAnalytics()
+        let lifecycle = AppLifecycleController(analytics: analytics)
+
+        lifecycle.transition(to: .foreground)
+        lifecycle.transition(to: .foreground)
+        lifecycle.transition(to: .background)
+
+        let events = analytics.events().filter { $0.name == "app_lifecycle" }
+        XCTAssertEqual(events.count, 2)
+        XCTAssertEqual(events.map { $0.properties["state"] }, ["foreground", "background"])
     }
 }

@@ -22,11 +22,13 @@ final class AppCoordinator: ObservableObject {
     init(container: AppContainer) {
         self.container = container
         let screenVisits = ScreenVisitCoordinator(analytics: container.analytics)
-        unauthenticatedNavigation = UnauthenticatedNavigationStore {
-            screenVisits.screenBecameTopmost($0)
+        unauthenticatedNavigation = UnauthenticatedNavigationStore { screen in
+            screenVisits.screenBecameTopmost(screen)
+            AppPerformanceSignposts.navigationCommitted(screenID: screen.id)
         }
-        authenticatedNavigation = AuthenticatedNavigationStore {
-            screenVisits.screenBecameTopmost($0)
+        authenticatedNavigation = AuthenticatedNavigationStore { screen in
+            screenVisits.screenBecameTopmost(screen)
+            AppPerformanceSignposts.navigationCommitted(screenID: screen.id)
         }
         deepLinks = DeepLinkOrchestrator(
             registry: container.deepLinkRegistry,
@@ -141,6 +143,15 @@ final class AppCoordinator: ObservableObject {
             phase = .authenticated
             if resolution.requiresPreflight {
                 authenticatedState = .preparing
+                let signpostID = AppPerformanceSignposts.beginAuthenticatedPreflight(
+                    identifier: resolution.identifier
+                )
+                defer {
+                    AppPerformanceSignposts.endAuthenticatedPreflight(
+                        signpostID,
+                        identifier: resolution.identifier
+                    )
+                }
                 do {
                     try await resolution.preflight?()
                     guard !Task.isCancelled else { return }

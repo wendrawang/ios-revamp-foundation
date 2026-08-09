@@ -16,8 +16,14 @@ let package = Package(
             dependencies: ["DesignSystem", .product(name: "CoreNetworking", package: "PlatformKit")],
             path: "Sources"
         ),
-        .testTarget(name: "RewardsFeatureTests", dependencies: ["RewardsFeature"], path: "Tests"),
+        .testTarget(
+            name: "RewardsFeatureTests",
+            dependencies: [
+                "RewardsFeature",
+                .product(name: "CoreNetworking", package: "PlatformKit"),
+            ],
+            path: "Tests"
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
-
