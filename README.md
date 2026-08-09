@@ -46,6 +46,21 @@ Run dependency checks:
 ./Scripts/check-architecture.sh
 ```
 
+Run the complete local quality gate—every Local SPM test target, app build,
+unit/integration tests, UI tests, performance metrics, and coverage:
+
+```bash
+./Scripts/run-quality-gates.sh
+```
+
+The script selects an available iPhone Simulator automatically. Override it
+when validating a specific runtime:
+
+```bash
+SIMULATOR_DESTINATION='platform=iOS Simulator,name=iPhone 17 Pro,OS=26.5' \
+./Scripts/run-quality-gates.sh
+```
+
 ## Demonstrated flows
 
 - Login and logout with separate app/session/UI lifetimes
@@ -62,4 +77,5 @@ Run dependency checks:
 - Runtime feature flags, structured logging, analytics, and screen visits
 
 Architecture rationale and ownership rules live in `Docs/` and `AGENTS.md`.
-
+Quality policy and the physical-device performance acceptance process live in
+`Docs/QualityGates.md` and `Docs/Performance.md`.

@@ -20,4 +20,7 @@
 - Keep accessibility identifiers stable and namespaced.
 - Logs and analytics must be structured, privacy-safe, and redacted.
 - Add or update deterministic tests whenever behavior or an architecture boundary changes.
-
+- Keep every business domain in its own Local SPM with an executable test target.
+- Run `Scripts/run-quality-gates.sh` for architecture-sensitive or release-bound changes.
+- Treat coverage as a regression floor; test domain behavior and failure/cancellation paths rather than writing percentage-only tests.
+- Do not claim simulator tests guarantee 60/120 Hz or zero leaks; retain physical-device Instruments acceptance evidence.

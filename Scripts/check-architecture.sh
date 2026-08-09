@@ -47,6 +47,29 @@ for forbidden in CoreStorage BankingPrimitives NavigationKit Common Utils; do
     fi
 done
 
+feature_package_count=0
+while IFS= read -r feature_directory; do
+    feature_package_count=$((feature_package_count + 1))
+    if [[ ! -f "$feature_directory/Package.swift" ]]; then
+        echo "ARCHITECTURE VIOLATION: domain is not an independent Local SPM: $feature_directory"
+        failure=1
+    fi
+    if ! find "$feature_directory/Tests" -type f -name '*.swift' -print0 2>/dev/null \
+        | xargs -0 rg -l '@Test|XCTestCase' >/dev/null 2>&1; then
+        echo "ARCHITECTURE VIOLATION: domain package has no executable tests: $feature_directory"
+        failure=1
+    fi
+done < <(find Packages/Features -mindepth 1 -maxdepth 1 -type d | sort)
+
+if [[ "$feature_package_count" == "0" ]]; then
+    echo "ARCHITECTURE VIOLATION: no independent feature packages found"
+    failure=1
+fi
+
+report_matches \
+    "Feature package manifests must not depend on another feature package." \
+    rg -n '\.package\(path:.*Feature' Packages/Features --glob 'Package.swift'
+
 while IFS= read -r manifest; do
     package_directory="$(dirname "$manifest")"
     (cd "$package_directory" && swift package dump-package >/dev/null)
@@ -56,4 +79,4 @@ if [[ "$failure" != "0" ]]; then
     exit 1
 fi
 
-echo "Architecture checks passed: package manifests resolve, dependency imports are clean, and exactly two primary NavigationStacks exist."
+echo "Architecture checks passed: every domain is an independently tested Local SPM, package manifests resolve, dependency imports are clean, and exactly two primary NavigationStacks exist."
