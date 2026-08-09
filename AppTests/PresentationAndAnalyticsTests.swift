@@ -11,7 +11,7 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         let controller = GlobalPresentationController()
         controller.present(
             GlobalPresentation(
-                id: "sample",
+                identifier: "sample",
                 title: "Title",
                 message: "Message",
                 primaryButtonTitle: "Close"
@@ -25,8 +25,9 @@ final class PresentationAndAnalyticsTests: XCTestCase {
     // Memverifikasi global presentations are queued in order.
     func testGlobalPresentationsAreQueuedInOrder() {
         let controller = GlobalPresentationController()
-        let first = GlobalPresentation(id: "first", title: "First", message: "One", primaryButtonTitle: "Next")
-        let second = GlobalPresentation(id: "second", title: "Second", message: "Two", primaryButtonTitle: "Close")
+        let first = GlobalPresentation(identifier: "first", title: "First", message: "One", primaryButtonTitle: "Next")
+        let second = GlobalPresentation(
+            identifier: "second", title: "Second", message: "Two", primaryButtonTitle: "Close")
 
         controller.present(first)
         controller.present(second)
@@ -42,7 +43,7 @@ final class PresentationAndAnalyticsTests: XCTestCase {
     func testBlockerPriorityIsDeterministicAndNavigationIsUntouched() {
         let blockers = GlobalBlockerController()
         let navigation = AuthenticatedNavigationStore { _ in }
-        navigation.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
+        navigation.push(TransferRoute.landing, screen: ScreenDescriptor(identifier: "transfer.landing"))
 
         blockers.show(.connectivity)
         blockers.show(.maintenance)
@@ -55,22 +56,22 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         blockers.hide(.connectivity)
 
         XCTAssertEqual(navigation.pathCount, 1)
-        XCTAssertEqual(navigation.topScreen.id, "transfer.landing")
+        XCTAssertEqual(navigation.topScreen.identifier, "transfer.landing")
     }
 
     // Memverifikasi screen visits come from committed navigation and tab state.
     func testScreenVisitsComeFromCommittedNavigationAndTabState() {
         let analytics = InMemoryAnalytics()
         let visits = ScreenVisitCoordinator(analytics: analytics)
-        let store = AuthenticatedNavigationStore { visits.screenBecameTopmost($0) }
+        let store = AuthenticatedNavigationStore { screen in visits.screenBecameTopmost(screen) }
 
         store.selectTab(.rewards)
         store.selectTab(.rewards)
-        store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
+        store.push(TransferRoute.landing, screen: ScreenDescriptor(identifier: "transfer.landing"))
         store.pop()
 
-        XCTAssertEqual(visits.visits.map(\.id), ["tab.rewards", "transfer.landing", "tab.rewards"])
-        XCTAssertEqual(analytics.events().filter { $0.name == "screen_visit" }.count, 3)
+        XCTAssertEqual(visits.visits.map(\.identifier), ["tab.rewards", "transfer.landing", "tab.rewards"])
+        XCTAssertEqual(analytics.events().filter { event in event.name == "screen_visit" }.count, 3)
     }
 
     // Memverifikasi tab activity requires selection foreground and no blocker.
@@ -110,8 +111,8 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         lifecycle.transition(to: .foreground)
         lifecycle.transition(to: .background)
 
-        let events = analytics.events().filter { $0.name == "app_lifecycle" }
+        let events = analytics.events().filter { event in event.name == "app_lifecycle" }
         XCTAssertEqual(events.count, 2)
-        XCTAssertEqual(events.map { $0.properties["state"] }, ["foreground", "background"])
+        XCTAssertEqual(events.map { event in event.properties["state"] }, ["foreground", "background"])
     }
 }

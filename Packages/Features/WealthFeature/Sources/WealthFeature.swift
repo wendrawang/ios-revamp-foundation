@@ -9,11 +9,11 @@ public enum WealthAccessibilityID {
 }
 
 public enum WealthRoute: Hashable, Sendable {
-    case product(id: String)
+    case product(identifier: String)
 }
 
 public enum WealthDeepLinkIntent: Equatable, Sendable {
-    case product(id: String)
+    case product(identifier: String)
 }
 
 public struct WealthDeepLinkParser: Sendable {
@@ -25,36 +25,41 @@ public struct WealthDeepLinkParser: Sendable {
         guard url.scheme?.lowercased() == "iosrevamp",
             url.host?.lowercased() == "wealth",
             url.path == "/product",
-            let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-                .queryItems?.first(where: { $0.name == "id" })?.value,
-            !id.isEmpty
+            let productIdentifier = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { queryItem in queryItem.name == "id" })?.value,
+            !productIdentifier.isEmpty
         else { return nil }
-        return .product(id: id)
+        return .product(identifier: productIdentifier)
     }
 }
 
 public struct WealthProduct: Codable, Equatable, Sendable {
-    public let id: String
+    public let identifier: String
     public let name: String
 
+    private enum CodingKeys: String, CodingKey {
+        case identifier = "id"
+        case name
+    }
+
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
-    public init(id: String, name: String) {
-        self.id = id
+    public init(identifier: String, name: String) {
+        self.identifier = identifier
         self.name = name
     }
 }
 
 public protocol WealthServicing: Sendable {
     // Mengambil data produk Wealth melalui service domain.
-    func product(id: String) async throws -> WealthProduct
+    func product(identifier: String) async throws -> WealthProduct
 }
 
 public struct FakeWealthService: WealthServicing {
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
     // Mengambil data produk Wealth melalui service domain.
-    public func product(id: String) async throws -> WealthProduct {
-        WealthProduct(id: id, name: "Balanced Growth Fund")
+    public func product(identifier: String) async throws -> WealthProduct {
+        WealthProduct(identifier: identifier, name: "Balanced Growth Fund")
     }
 }
 
@@ -63,8 +68,8 @@ public struct RemoteWealthService: WealthServicing {
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(client: any HTTPClient) { self.client = client }
     // Mengambil data produk Wealth melalui service domain.
-    public func product(id: String) async throws -> WealthProduct {
-        try await client.send(HTTPRequest(path: "/wealth/products/\(id)")).decode(WealthProduct.self)
+    public func product(identifier: String) async throws -> WealthProduct {
+        try await client.send(HTTPRequest(path: "/wealth/products/\(identifier)")).decode(WealthProduct.self)
     }
 }
 
@@ -73,7 +78,9 @@ public struct LoadWealthProductUseCase: Sendable {
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(service: any WealthServicing) { self.service = service }
     // Menjalankan operasi dependency atau use case yang dibungkus tipe ini.
-    public func execute(id: String) async throws -> WealthProduct { try await service.product(id: id) }
+    public func execute(identifier: String) async throws -> WealthProduct {
+        try await service.product(identifier: identifier)
+    }
 }
 
 public protocol WealthPreflighting: Sendable {
@@ -115,7 +122,7 @@ public final class WealthProductViewModel: ObservableObject {
         guard product == nil, !isLoading else { return }
         isLoading = true
         task = Task { [weak self, productID, useCase] in
-            let loaded = try? await useCase.execute(id: productID)
+            let loaded = try? await useCase.execute(identifier: productID)
             guard !Task.isCancelled else { return }
             self?.product = loaded
             self?.isLoading = false
@@ -145,14 +152,14 @@ public struct WealthProductScreen: View {
     }
 
     public var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             Image(systemName: "chart.pie.fill").font(.system(size: 60)).foregroundStyle(DSColor.accent)
             Text(viewModel.product?.name ?? "Loading product…").font(.title2.bold())
             if let product = viewModel.product {
-                Text("Product ID: \(product.id)").foregroundStyle(.secondary)
+                Text("Product ID: \(product.identifier)").foregroundStyle(.secondary)
             }
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Wealth Product")
         .accessibilityIdentifier(WealthAccessibilityID.product)
         .task { viewModel.load() }

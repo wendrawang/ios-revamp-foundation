@@ -102,8 +102,8 @@ public enum TransferSheetAction: Equatable, Sendable {
     case dismiss
 }
 
-public struct TransferSheetPresentation: Identifiable, Equatable, Sendable {
-    public let id: String
+public struct TransferSheetPresentation: Equatable, Sendable {
+    public let identifier: String
     public let title: String
     public let message: String
     public let primaryButtonTitle: String
@@ -111,13 +111,13 @@ public struct TransferSheetPresentation: Identifiable, Equatable, Sendable {
 
     // Membuat model presentasi yang hanya membawa typed frontend action.
     public init(
-        id: String,
+        identifier: String,
         title: String,
         message: String,
         primaryButtonTitle: String,
         primaryAction: TransferSheetAction
     ) {
-        self.id = id
+        self.identifier = identifier
         self.title = title
         self.message = message
         self.primaryButtonTitle = primaryButtonTitle
@@ -133,7 +133,7 @@ public struct TransferPresentationMapper: Sendable {
     public func map(_ error: BackendErrorDTO) -> TransferSheetPresentation {
         if error.code == "UPGRADE_REQUIRED" {
             return TransferSheetPresentation(
-                id: error.code,
+                identifier: error.code,
                 title: error.title,
                 message: error.message,
                 primaryButtonTitle: error.primaryButtonTitle,
@@ -141,7 +141,7 @@ public struct TransferPresentationMapper: Sendable {
             )
         }
         return TransferSheetPresentation(
-            id: "GENERIC",
+            identifier: "GENERIC",
             title: "Unable to continue",
             message: "Please try again later.",
             primaryButtonTitle: "Close",

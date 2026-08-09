@@ -146,7 +146,7 @@ enum DeepLinkRegistryFactory {
                     store.popToRoot()
                     store.push(
                         AuthenticationRoute.registrationContinuation(token: token),
-                        screen: ScreenDescriptor(id: "auth.registration.continuation")
+                        screen: ScreenDescriptor(identifier: "auth.registration.continuation")
                     )
                 },
                 applyAuthenticated: nil
@@ -174,14 +174,14 @@ enum DeepLinkRegistryFactory {
                         )
                     }
                 )
-            case .detail(let id):
-                return rewardDetailResolution(id: id)
+            case .detail(let rewardIdentifier):
+                return rewardDetailResolution(rewardIdentifier: rewardIdentifier)
             }
         }
     }
 
     // Membuat typed Rewards detail decision tanpa mengekspos payload ke router global.
-    private static func rewardDetailResolution(id: String) -> ResolvedDeepLink {
+    private static func rewardDetailResolution(rewardIdentifier: String) -> ResolvedDeepLink {
         ResolvedDeepLink(
             identifier: "rewards.detail",
             authentication: .authenticated,
@@ -192,8 +192,8 @@ enum DeepLinkRegistryFactory {
                 store.openCanonical(
                     tab: .rewards,
                     destination: NavigationDestination(
-                        route: RewardsRoute.detail(id: id),
-                        screen: ScreenDescriptor(id: "rewards.detail")
+                        route: RewardsRoute.detail(identifier: rewardIdentifier),
+                        screen: ScreenDescriptor(identifier: "rewards.detail")
                     )
                 )
             }
@@ -207,21 +207,21 @@ enum DeepLinkRegistryFactory {
         let parser = WealthDeepLinkParser()
         return DeepLinkRegistration(identifier: "wealth") { url in
             guard featureFlags.isEnabled(.wealthEntryEnabled),
-                case .product(let id)? = parser.parse(url)
+                case .product(let productIdentifier)? = parser.parse(url)
             else { return nil }
             let preflight = DummyWealthPreflightUseCase(delayNanoseconds: 250_000_000)
             return ResolvedDeepLink(
                 identifier: "wealth.product",
                 authentication: .authenticated,
                 isPreflightRequired: true,
-                preflight: { try await preflight.prepare(productID: id) },
+                preflight: { try await preflight.prepare(productID: productIdentifier) },
                 applyUnauthenticated: nil,
                 applyAuthenticated: { store in
                     store.openCanonical(
                         tab: .financial,
                         destination: NavigationDestination(
-                            route: WealthRoute.product(id: id),
-                            screen: ScreenDescriptor(id: "wealth.product")
+                            route: WealthRoute.product(identifier: productIdentifier),
+                            screen: ScreenDescriptor(identifier: "wealth.product")
                         )
                     )
                 }

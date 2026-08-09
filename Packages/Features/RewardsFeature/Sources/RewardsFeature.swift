@@ -9,12 +9,12 @@ public enum RewardsAccessibilityID {
 }
 
 public enum RewardsRoute: Hashable, Sendable {
-    case detail(id: String)
+    case detail(identifier: String)
 }
 
 public enum RewardsDeepLinkIntent: Equatable, Sendable {
     case root
-    case detail(id: String)
+    case detail(identifier: String)
 }
 
 public struct RewardsDeepLinkParser: Sendable {
@@ -26,27 +26,33 @@ public struct RewardsDeepLinkParser: Sendable {
         guard url.scheme?.lowercased() == "iosrevamp", url.host?.lowercased() == "rewards" else { return nil }
         if url.path.isEmpty || url.path == "/" { return .root }
         guard url.path == "/detail",
-            let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-                .queryItems?.first(where: { $0.name == "id" })?.value,
-            !id.isEmpty
+            let rewardIdentifier = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { queryItem in queryItem.name == "id" })?.value,
+            !rewardIdentifier.isEmpty
         else { return nil }
-        return .detail(id: id)
+        return .detail(identifier: rewardIdentifier)
     }
 }
 
 public struct Reward: Codable, Equatable, Sendable {
-    public let id: String
+    public let identifier: String
     public let title: String
+
+    private enum CodingKeys: String, CodingKey {
+        case identifier = "id"
+        case title
+    }
+
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
-    public init(id: String, title: String) {
-        self.id = id
+    public init(identifier: String, title: String) {
+        self.identifier = identifier
         self.title = title
     }
 }
 
 public protocol RewardsServicing: Sendable {
     // Mengambil detail Rewards melalui service domain.
-    func reward(id: String) async throws -> Reward
+    func reward(identifier: String) async throws -> Reward
 }
 
 public struct RemoteRewardsService: RewardsServicing {
@@ -54,8 +60,8 @@ public struct RemoteRewardsService: RewardsServicing {
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(client: any HTTPClient) { self.client = client }
     // Mengambil detail Rewards melalui service domain.
-    public func reward(id: String) async throws -> Reward {
-        try await client.send(HTTPRequest(path: "/rewards/\(id)")).decode(Reward.self)
+    public func reward(identifier: String) async throws -> Reward {
+        try await client.send(HTTPRequest(path: "/rewards/\(identifier)")).decode(Reward.self)
     }
 }
 
@@ -89,7 +95,7 @@ public struct RewardsRootView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: DSSpacing.md) {
+            VStack(spacing: DSSpacing.medium) {
                 Text("Rewards").font(.largeTitle.bold()).frame(maxWidth: .infinity, alignment: .leading)
                 DSFeatureCard(title: "Points") {
                     Text("1,478 points").font(.title2.bold())
@@ -100,7 +106,7 @@ public struct RewardsRootView: View {
                     }
                 }
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
         }
         .navigationTitle("Rewards")
     }
@@ -115,12 +121,12 @@ public struct RewardDetailScreen: View {
     }
 
     public var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             Image(systemName: "gift.fill").font(.system(size: 60)).foregroundStyle(DSColor.accent)
             Text("Reward Detail").font(.largeTitle.bold())
             Text("Reward: \(rewardID)").foregroundStyle(.secondary)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Reward")
         .accessibilityIdentifier(RewardsAccessibilityID.detail)
     }

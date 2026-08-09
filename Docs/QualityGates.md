@@ -15,8 +15,12 @@ The gate performs, in order:
 
 The architecture step also runs the repository-owned Swift style linter. It
 enforces a 250-line file limit, a 50-line method limit, a purpose comment for
-every method, and the `is` prefix for boolean flags and parameters. Apple
-`swift-format` also runs in strict mode using the checked-in `.swift-format`.
+every method, a 3–35 character range for variable-style identifiers, and the
+`is` prefix for boolean flags and parameters. `_` remains valid only as an
+intentional discard token. The range applies to declarations owned by this
+repository; external API labels and serialized wire keys retain their required
+contract names. Apple `swift-format` also runs in strict mode using the checked-in
+`.swift-format`.
 
 ## Definition of covered
 

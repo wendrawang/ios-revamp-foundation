@@ -47,7 +47,8 @@ Run dependency checks:
 ```
 
 The architecture command also runs strict Apple `swift-format` plus the custom
-file-size, method-size, method-comment, and boolean-prefix rules.
+file-size, method-size, method-comment, 3–35 character variable-name, and
+boolean-prefix rules.
 
 Run the complete local quality gate—every Local SPM test target, app build,
 unit/integration tests, UI tests, performance metrics, and coverage:

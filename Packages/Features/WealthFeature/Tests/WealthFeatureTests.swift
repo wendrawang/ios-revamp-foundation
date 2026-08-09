@@ -11,7 +11,7 @@ private struct StubWealthService: WealthServicing {
     let mode: StubWealthMode
 
     // Mengambil data produk Wealth melalui service domain.
-    func product(id: String) async throws -> WealthProduct {
+    func product(identifier: String) async throws -> WealthProduct {
         switch mode {
         case .success(let product): return product
         case .suspended:
@@ -39,13 +39,13 @@ private func waitUntil(_ condition: () -> Bool) async throws {
 
 // Memverifikasi wealth product route preserves identifier.
 @Test func wealthProductRoutePreservesIdentifier() {
-    #expect(WealthRoute.product(id: "wealth-001") == .product(id: "wealth-001"))
+    #expect(WealthRoute.product(identifier: "wealth-001") == .product(identifier: "wealth-001"))
 }
 
 // Memverifikasi wealth deep link parses.
 @Test func wealthDeepLinkParses() {
     let url = URL(string: "iosrevamp://wealth/product?id=wealth-001")!
-    #expect(WealthDeepLinkParser().parse(url) == .product(id: "wealth-001"))
+    #expect(WealthDeepLinkParser().parse(url) == .product(identifier: "wealth-001"))
 }
 
 // Memverifikasi malformed wealth deep links are rejected.
@@ -58,9 +58,9 @@ private func waitUntil(_ condition: () -> Bool) async throws {
 // Memverifikasi wealth view model loads product once.
 @MainActor
 @Test func wealthViewModelLoadsProductOnce() async throws {
-    let product = WealthProduct(id: "wealth-001", name: "Growth")
+    let product = WealthProduct(identifier: "wealth-001", name: "Growth")
     let viewModel = WealthProductViewModel(
-        productID: product.id,
+        productID: product.identifier,
         useCase: LoadWealthProductUseCase(service: StubWealthService(mode: .success(product)))
     )
 

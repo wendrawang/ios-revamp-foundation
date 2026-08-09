@@ -6,7 +6,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
     @Published private var path = NavigationPath()
     @Published private(set) var metadata: [ScreenDescriptor] = []
     private let onTopScreenChanged: (ScreenDescriptor) -> Void
-    private let rootScreen = ScreenDescriptor(id: "auth.login")
+    private let rootScreen = ScreenDescriptor(identifier: "auth.login")
 
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(onTopScreenChanged: @escaping (ScreenDescriptor) -> Void) {
@@ -19,7 +19,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
     var pathBinding: Binding<NavigationPath> {
         Binding(
             get: { self.path },
-            set: { self.reconcileSystemPath($0) }
+            set: { updatedPath in self.reconcileSystemPath(updatedPath) }
         )
     }
 
@@ -89,14 +89,14 @@ final class AuthenticatedNavigationStore: ObservableObject {
     var pathBinding: Binding<NavigationPath> {
         Binding(
             get: { self.path },
-            set: { self.reconcileSystemPath($0) }
+            set: { updatedPath in self.reconcileSystemPath(updatedPath) }
         )
     }
 
     var selectedTabBinding: Binding<AppTab> {
         Binding(
             get: { self.selectedTab },
-            set: { self.selectTab($0) }
+            set: { selectedTab in self.selectTab(selectedTab) }
         )
     }
 

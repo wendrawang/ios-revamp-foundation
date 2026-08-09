@@ -17,14 +17,14 @@ struct UnauthenticatedNavigationHost: View {
 
     var body: some View {
         NavigationStack(path: store.pathBinding) {
-            LoginScreen(authenticator: FakeAuthenticationService()) {
-                coordinator.handleAuthenticationOutput($0)
+            LoginScreen(authenticator: FakeAuthenticationService()) { authenticationOutput in
+                coordinator.handleAuthenticationOutput(authenticationOutput)
             }
             .navigationDestination(for: AuthenticationRoute.self) { route in
                 switch route {
                 case .login:
-                    LoginScreen(authenticator: FakeAuthenticationService()) {
-                        coordinator.handleAuthenticationOutput($0)
+                    LoginScreen(authenticator: FakeAuthenticationService()) { authenticationOutput in
+                        coordinator.handleAuthenticationOutput(authenticationOutput)
                     }
                 case .registrationContinuation(let token):
                     RegistrationContinuationScreen(token: token)
@@ -58,24 +58,28 @@ struct AuthenticatedNavigationHost: View {
                         route: route,
                         service: session.transferService,
                         analytics: coordinator.container.analytics,
-                        navigate: {
-                            store.push($0, screen: ScreenDescriptor(id: screenID(for: $0)))
+                        navigate: { transferRoute in
+                            store.push(
+                                transferRoute,
+                                screen: ScreenDescriptor(identifier: screenID(for: transferRoute))
+                            )
                         },
-                        output: { composition.handle($0) }
+                        output: { transferOutput in composition.handle(transferOutput) }
                     )
                 }
             }
             .navigationDestination(for: WealthRoute.self) { route in
                 if let session = coordinator.sessionScope {
                     switch route {
-                    case .product(let id):
-                        WealthProductScreen(productID: id, service: session.wealthService)
+                    case .product(let productIdentifier):
+                        WealthProductScreen(productID: productIdentifier, service: session.wealthService)
                     }
                 }
             }
             .navigationDestination(for: RewardsRoute.self) { route in
                 switch route {
-                case .detail(let id): RewardDetailScreen(rewardID: id)
+                case .detail(let rewardIdentifier):
+                    RewardDetailScreen(rewardID: rewardIdentifier)
                 }
             }
             .navigationDestination(for: UpgradeServiceRoute.self) { _ in
@@ -107,12 +111,16 @@ struct MainTabContainer: View {
 
     var body: some View {
         TabView(selection: store.selectedTabBinding) {
-            DashboardRootView(isTransferEnabled: true) { composition.handle($0) }
-                .tag(AppTab.dashboard)
+            DashboardRootView(isTransferEnabled: true) { dashboardOutput in
+                composition.handle(dashboardOutput)
+            }
+            .tag(AppTab.dashboard)
 
             FinancialHubRootView(
                 isWealthEnabled: coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled)
-            ) { composition.handle($0) }
+            ) { financialOutput in
+                composition.handle(financialOutput)
+            }
             .tag(AppTab.financial)
 
             ScanRootView(
@@ -121,18 +129,21 @@ struct MainTabContainer: View {
             )
             .tag(AppTab.scan)
 
-            RewardsRootView { composition.openRewardDetail($0) }
-                .tag(AppTab.rewards)
+            RewardsRootView { rewardIdentifier in
+                composition.openRewardDetail(rewardIdentifier)
+            }
+            .tag(AppTab.rewards)
 
             MoreRootView(isWebEnabled: coordinator.container.featureFlags.isEnabled(.webSampleEnabled)) {
-                composition.handle($0)
+                moreOutput in
+                composition.handle(moreOutput)
             }
             .tag(AppTab.more)
         }
         .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            DSCustomTabBar(items: tabItems, selection: store.selectedTab) {
-                store.selectTab($0)
+            DSCustomTabBar(items: tabItems, selection: store.selectedTab) { selectedTab in
+                store.selectTab(selectedTab)
             }
         }
     }
@@ -148,19 +159,19 @@ struct MainTabContainer: View {
     private var tabItems: [DSTabItem<AppTab>] {
         [
             DSTabItem(
-                id: .dashboard, title: "Home", systemImage: "house",
+                identifier: .dashboard, title: "Home", systemImage: "house",
                 accessibilityIdentifier: AppAccessibilityID.tabDashboard),
             DSTabItem(
-                id: .financial, title: "Financial", systemImage: "chart.pie",
+                identifier: .financial, title: "Financial", systemImage: "chart.pie",
                 accessibilityIdentifier: AppAccessibilityID.tabFinancial),
             DSTabItem(
-                id: .scan, title: "Scan", systemImage: "qrcode.viewfinder",
+                identifier: .scan, title: "Scan", systemImage: "qrcode.viewfinder",
                 accessibilityIdentifier: AppAccessibilityID.tabScan, isElevated: true),
             DSTabItem(
-                id: .rewards, title: "Rewards", systemImage: "gift",
+                identifier: .rewards, title: "Rewards", systemImage: "gift",
                 accessibilityIdentifier: AppAccessibilityID.tabRewards),
             DSTabItem(
-                id: .more, title: "More", systemImage: "circle.grid.2x2",
+                identifier: .more, title: "More", systemImage: "circle.grid.2x2",
                 accessibilityIdentifier: AppAccessibilityID.tabMore),
         ]
     }

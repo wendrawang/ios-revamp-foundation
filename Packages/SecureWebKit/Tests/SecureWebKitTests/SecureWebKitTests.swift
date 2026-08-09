@@ -18,7 +18,7 @@ private final class URLSink: @unchecked Sendable {
 @Test func applicationDeepLinkTakesPriorityOverWebHostPolicy() {
     let decider = SecureWebNavigationDecider(
         policy: WebNavigationPolicy(allowedHosts: ["allowed.test"]),
-        isApplicationDeepLink: { $0.scheme == "iosrevamp" }
+        isApplicationDeepLink: { candidateURL in candidateURL.scheme == "iosrevamp" }
     )
     #expect(decider.decision(for: URL(string: "iosrevamp://rewards")!) == .applicationDeepLink)
 }
@@ -30,9 +30,9 @@ private final class URLSink: @unchecked Sendable {
     let coordinator = SecureWebCoordinator(
         decider: SecureWebNavigationDecider(
             policy: WebNavigationPolicy(allowedHosts: ["allowed.test"]),
-            isApplicationDeepLink: { $0.scheme == "iosrevamp" }
+            isApplicationDeepLink: { candidateURL in candidateURL.scheme == "iosrevamp" }
         ),
-        submitApplicationDeepLink: { sink.append($0) },
+        submitApplicationDeepLink: { submittedURL in sink.append(submittedURL) },
         logger: InMemoryLogger()
     )
     let url = URL(string: "iosrevamp://rewards/detail?id=reward-001")!

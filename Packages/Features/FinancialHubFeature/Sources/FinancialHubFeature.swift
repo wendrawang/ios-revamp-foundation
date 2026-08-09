@@ -21,7 +21,7 @@ public struct FinancialHubRootView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: DSSpacing.md) {
+            VStack(spacing: DSSpacing.medium) {
                 financialCard(title: "Savings", icon: "wallet.bifold")
                 financialCard(title: "Investment", icon: "chart.line.uptrend.xyaxis")
                     .onTapGesture {
@@ -30,20 +30,20 @@ public struct FinancialHubRootView: View {
                     .accessibilityIdentifier(FinancialHubAccessibilityID.investment)
                 financialCard(title: "Loan", icon: "building.columns")
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
         }
         .navigationTitle("Financial")
     }
 
     // Membangun card Financial dengan output navigation bertipe.
     private func financialCard(title: String, icon: String) -> some View {
-        HStack(spacing: DSSpacing.md) {
+        HStack(spacing: DSSpacing.medium) {
             Image(systemName: icon).font(.title2).foregroundStyle(DSColor.accent)
             Text(title).font(.headline)
             Spacer()
             Image(systemName: "chevron.right").foregroundStyle(.secondary)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .background(DSColor.surface, in: RoundedRectangle(cornerRadius: 16))
     }
 }

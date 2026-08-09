@@ -11,11 +11,11 @@ public enum DSColor {
 }
 
 public enum DSSpacing {
-    public static let xs: CGFloat = 4
-    public static let sm: CGFloat = 8
-    public static let md: CGFloat = 16
-    public static let lg: CGFloat = 24
-    public static let xl: CGFloat = 32
+    public static let tiny: CGFloat = 4
+    public static let small: CGFloat = 8
+    public static let medium: CGFloat = 16
+    public static let large: CGFloat = 24
+    public static let extraLarge: CGFloat = 32
 }
 
 public struct DSPrimaryButton: View {
@@ -53,11 +53,11 @@ public struct DSFeatureCard<Content: View>: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DSSpacing.md) {
+        VStack(alignment: .leading, spacing: DSSpacing.medium) {
             Text(title).font(.title3.bold())
             content()
         }
-        .padding(DSSpacing.md)
+        .padding(DSSpacing.medium)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DSColor.surface, in: RoundedRectangle(cornerRadius: 16))
     }
@@ -93,7 +93,7 @@ public struct DSBottomSheetScaffold: View {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
                 .onTapGesture(perform: onDismiss)
-            VStack(alignment: .leading, spacing: DSSpacing.md) {
+            VStack(alignment: .leading, spacing: DSSpacing.medium) {
                 Capsule().fill(Color.secondary).frame(width: 42, height: 5).frame(maxWidth: .infinity)
                 Text(title).font(.title3.bold())
                 Text(message).font(.body).foregroundStyle(.secondary)
@@ -103,7 +103,7 @@ public struct DSBottomSheetScaffold: View {
                     action: onPrimary
                 )
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
             .background(DSColor.background, in: UnevenRoundedRectangle(topLeadingRadius: 24, topTrailingRadius: 24))
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -139,7 +139,7 @@ public struct DSBlockerView: View {
     public var body: some View {
         ZStack {
             DSColor.blockerScrim.ignoresSafeArea()
-            VStack(spacing: DSSpacing.md) {
+            VStack(spacing: DSSpacing.medium) {
                 Image(systemName: icon).font(.largeTitle).foregroundStyle(DSColor.accent)
                 Text(title).font(.title2.bold()).multilineTextAlignment(.center)
                 Text(message).font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -147,17 +147,17 @@ public struct DSBlockerView: View {
                     DSPrimaryButton(title: actionTitle, action: action)
                 }
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
             .background(DSColor.background, in: RoundedRectangle(cornerRadius: 20))
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
         }
         .accessibilityIdentifier(accessibilityIdentifier)
         .accessibilityAddTraits(.isModal)
     }
 }
 
-public struct DSTabItem<ID: Hashable>: Identifiable {
-    public let id: ID
+public struct DSTabItem<Identifier: Hashable> {
+    public let identifier: Identifier
     public let title: String
     public let systemImage: String
     public let accessibilityIdentifier: String
@@ -165,13 +165,13 @@ public struct DSTabItem<ID: Hashable>: Identifiable {
 
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
-        id: ID,
+        identifier: Identifier,
         title: String,
         systemImage: String,
         accessibilityIdentifier: String,
         isElevated: Bool = false
     ) {
-        self.id = id
+        self.identifier = identifier
         self.title = title
         self.systemImage = systemImage
         self.accessibilityIdentifier = accessibilityIdentifier
@@ -179,13 +179,17 @@ public struct DSTabItem<ID: Hashable>: Identifiable {
     }
 }
 
-public struct DSCustomTabBar<ID: Hashable>: View {
-    private let items: [DSTabItem<ID>]
-    private let selection: ID
-    private let onSelect: (ID) -> Void
+public struct DSCustomTabBar<Identifier: Hashable>: View {
+    private let items: [DSTabItem<Identifier>]
+    private let selection: Identifier
+    private let onSelect: (Identifier) -> Void
 
     // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
-    public init(items: [DSTabItem<ID>], selection: ID, onSelect: @escaping (ID) -> Void) {
+    public init(
+        items: [DSTabItem<Identifier>],
+        selection: Identifier,
+        onSelect: @escaping (Identifier) -> Void
+    ) {
         self.items = items
         self.selection = selection
         self.onSelect = onSelect
@@ -193,9 +197,9 @@ public struct DSCustomTabBar<ID: Hashable>: View {
 
     public var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
-            ForEach(items) { item in
+            ForEach(items, id: \.identifier) { item in
                 Button {
-                    onSelect(item.id)
+                    onSelect(item.identifier)
                 } label: {
                     VStack(spacing: 3) {
                         Image(systemName: item.systemImage)
@@ -214,16 +218,16 @@ public struct DSCustomTabBar<ID: Hashable>: View {
                 }
                 .accessibilityIdentifier(item.accessibilityIdentifier)
                 .accessibilityLabel(item.title)
-                .accessibilityAddTraits(selection == item.id ? .isSelected : [])
+                .accessibilityAddTraits(selection == item.identifier ? .isSelected : [])
             }
         }
-        .padding(.horizontal, DSSpacing.sm)
-        .padding(.top, DSSpacing.sm)
+        .padding(.horizontal, DSSpacing.small)
+        .padding(.top, DSSpacing.small)
         .background(.regularMaterial)
     }
 
     // Memilih warna visual tab berdasarkan selected state.
-    private func color(for item: DSTabItem<ID>) -> Color {
-        selection == item.id ? DSColor.accent : DSColor.textSecondary
+    private func color(for item: DSTabItem<Identifier>) -> Color {
+        selection == item.identifier ? DSColor.accent : DSColor.textSecondary
     }
 }

@@ -23,6 +23,7 @@
 - Add a concise Indonesian `//` purpose comment to every method and initializer.
 - Keep each Swift file at 250 lines or fewer and each method at 50 lines or fewer.
 - Prefix every boolean flag, state, property, and boolean parameter with `is`.
+- Keep variable, property, parameter, and associated-value names between 3 and 35 characters; `_` is the only discard exception.
 - Keep every business domain in its own Local SPM with an executable test target.
 - Run `Scripts/run-quality-gates.sh` for architecture-sensitive or release-bound changes.
 - Treat coverage as a regression floor; test domain behavior and failure/cancellation paths rather than writing percentage-only tests.

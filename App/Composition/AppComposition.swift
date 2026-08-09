@@ -17,12 +17,12 @@ struct AppComposition {
         case .openTransfer:
             coordinator.authenticatedNavigation.push(
                 TransferRoute.landing,
-                screen: ScreenDescriptor(id: "transfer.landing")
+                screen: ScreenDescriptor(identifier: "transfer.landing")
             )
         case .openUpgradeService:
             coordinator.authenticatedNavigation.push(
                 UpgradeServiceRoute.start,
-                screen: ScreenDescriptor(id: "upgrade.root")
+                screen: ScreenDescriptor(identifier: "upgrade.root")
             )
         case .toggleConnectivityBlocker:
             coordinator.container.blockerController.toggleConnectivity()
@@ -35,8 +35,8 @@ struct AppComposition {
         case .openWealth(let productID):
             guard coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled) else { return }
             coordinator.authenticatedNavigation.push(
-                WealthRoute.product(id: productID),
-                screen: ScreenDescriptor(id: "wealth.product")
+                WealthRoute.product(identifier: productID),
+                screen: ScreenDescriptor(identifier: "wealth.product")
             )
         }
     }
@@ -47,13 +47,13 @@ struct AppComposition {
         case .openUpgradeService:
             coordinator.authenticatedNavigation.push(
                 UpgradeServiceRoute.start,
-                screen: ScreenDescriptor(id: "upgrade.root")
+                screen: ScreenDescriptor(identifier: "upgrade.root")
             )
         case .openWebSample:
             guard coordinator.container.featureFlags.isEnabled(.webSampleEnabled) else { return }
             coordinator.authenticatedNavigation.push(
                 AppWebRoute.sample,
-                screen: ScreenDescriptor(id: "web.sample")
+                screen: ScreenDescriptor(identifier: "web.sample")
             )
         case .logout:
             coordinator.logout()
@@ -66,8 +66,8 @@ struct AppComposition {
         case .openWealth(let productID, let mode):
             guard coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled) else { return }
             let destination = NavigationDestination(
-                route: WealthRoute.product(id: productID),
-                screen: ScreenDescriptor(id: "wealth.product")
+                route: WealthRoute.product(identifier: productID),
+                screen: ScreenDescriptor(identifier: "wealth.product")
             )
             switch mode {
             case .currentJourney:
@@ -78,7 +78,7 @@ struct AppComposition {
         case .openUpgradeService:
             coordinator.authenticatedNavigation.push(
                 UpgradeServiceRoute.start,
-                screen: ScreenDescriptor(id: "upgrade.root")
+                screen: ScreenDescriptor(identifier: "upgrade.root")
             )
         case .toggleConnectivityBlocker:
             coordinator.container.blockerController.toggleConnectivity()
@@ -86,10 +86,10 @@ struct AppComposition {
     }
 
     // Membuka Rewards detail melalui route konkret milik RewardsFeature.
-    func openRewardDetail(_ id: String) {
+    func openRewardDetail(_ rewardIdentifier: String) {
         coordinator.authenticatedNavigation.push(
-            RewardsRoute.detail(id: id),
-            screen: ScreenDescriptor(id: "rewards.detail")
+            RewardsRoute.detail(identifier: rewardIdentifier),
+            screen: ScreenDescriptor(identifier: "rewards.detail")
         )
     }
 }

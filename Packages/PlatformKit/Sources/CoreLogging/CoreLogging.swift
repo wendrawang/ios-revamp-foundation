@@ -46,7 +46,9 @@ public struct LogEntry: Equatable, Sendable {
     }
 
     public var sanitizedDescription: String {
-        let suffix = fields.map { "\($0.name)=\($0.renderedValue)" }.joined(separator: " ")
+        let suffix = fields.map { field in
+            "\(field.name)=\(field.renderedValue)"
+        }.joined(separator: " ")
         return suffix.isEmpty ? message : "\(message) \(suffix)"
     }
 }
@@ -69,8 +71,8 @@ public final class InMemoryLogger: AppLogging, @unchecked Sendable {
             level: entry.level,
             category: entry.category,
             message: entry.message,
-            fields: entry.fields.map {
-                LogField(name: $0.name, value: $0.renderedValue, privacy: .public)
+            fields: entry.fields.map { field in
+                LogField(name: field.name, value: field.renderedValue, privacy: .public)
             }
         )
         lock.withLock { storage.append(sanitized) }

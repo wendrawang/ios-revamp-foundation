@@ -72,11 +72,11 @@ public struct ScanRootView: View {
     }
 
     public var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.black)
                 .overlay {
-                    VStack(spacing: DSSpacing.md) {
+                    VStack(spacing: DSSpacing.medium) {
                         Image(systemName: "qrcode.viewfinder").font(.system(size: 72)).foregroundStyle(.white)
                         Text(viewModel.isCameraRunning ? "Camera resource active" : "Camera resource stopped")
                             .foregroundStyle(.white)
@@ -88,10 +88,12 @@ public struct ScanRootView: View {
             )
             .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Scan")
         .onAppear { viewModel.setOperational(isOperational) }
-        .onChange(of: isOperational) { viewModel.setOperational($0) }
+        .onChange(of: isOperational) { updatedState in
+            viewModel.setOperational(updatedState)
+        }
         .onDisappear { viewModel.setOperational(false) }
     }
 }

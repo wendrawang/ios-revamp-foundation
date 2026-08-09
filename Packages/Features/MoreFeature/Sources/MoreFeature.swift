@@ -25,7 +25,7 @@ public struct MoreRootView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DSSpacing.md) {
+            VStack(alignment: .leading, spacing: DSSpacing.medium) {
                 Text("Services").font(.largeTitle.bold())
                 DSPrimaryButton(title: "Upgrade Service", accessibilityIdentifier: MoreAccessibilityID.upgrade) {
                     output(.openUpgradeService)
@@ -39,7 +39,7 @@ public struct MoreRootView: View {
                     .frame(maxWidth: .infinity, minHeight: 48)
                     .accessibilityIdentifier(MoreAccessibilityID.logout)
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
         }
         .navigationTitle("More")
     }

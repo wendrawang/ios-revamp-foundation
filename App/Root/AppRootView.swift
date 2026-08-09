@@ -5,7 +5,7 @@ struct SplashView: View {
     var body: some View {
         ZStack {
             DSColor.accent.ignoresSafeArea()
-            VStack(spacing: DSSpacing.md) {
+            VStack(spacing: DSSpacing.medium) {
                 Image(systemName: "building.columns.fill").font(.system(size: 64))
                 Text("IOS Revamp Foundation").font(.title.bold())
             }
@@ -17,14 +17,14 @@ struct SplashView: View {
 
 struct AuthenticatedPreparingView: View {
     var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             ProgressView().controlSize(.large)
             Text("Preparing your secure destination").font(.headline)
             Text("Completing the required inquiry before navigation.")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .accessibilityIdentifier(AppAccessibilityID.authenticatedPreparing)
     }
 }
@@ -48,10 +48,12 @@ struct AppRootView: View {
             coordinator.container.lifecycleController.transition(from: scenePhase)
             coordinator.start()
         }
-        .onChange(of: scenePhase) {
-            coordinator.container.lifecycleController.transition(from: $0)
+        .onChange(of: scenePhase) { updatedPhase in
+            coordinator.container.lifecycleController.transition(from: updatedPhase)
         }
-        .onOpenURL { coordinator.handleDeepLink($0, source: .universalOrAppURL) }
+        .onOpenURL { openedURL in
+            coordinator.handleDeepLink(openedURL, source: .universalOrAppURL)
+        }
     }
 
     @ViewBuilder private var flow: some View {

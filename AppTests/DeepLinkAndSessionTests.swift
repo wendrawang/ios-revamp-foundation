@@ -21,7 +21,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
 
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .rewards)
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 1)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "rewards.detail")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "rewards.detail")
     }
 
     // Memverifikasi registration deep link stays unauthenticated.
@@ -33,7 +33,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
 
         XCTAssertEqual(coordinator.phase, .unauthenticated)
         XCTAssertEqual(coordinator.unauthenticatedNavigation.pathCount, 1)
-        XCTAssertEqual(coordinator.unauthenticatedNavigation.topScreen.id, "auth.registration.continuation")
+        XCTAssertEqual(coordinator.unauthenticatedNavigation.topScreen.identifier, "auth.registration.continuation")
     }
 
     // Memverifikasi preflight uses authenticated preparing before ready.
@@ -48,7 +48,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
 
         try await waitUntil { coordinator.authenticatedState == .ready }
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .financial)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "wealth.product")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "wealth.product")
     }
 
     // Memverifikasi logout releases uiscope and session scope.
@@ -100,7 +100,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         try await waitUntil { coordinator.authenticatedNavigation.selectedTab == .rewards }
 
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 0)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "tab.rewards")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "tab.rewards")
     }
 
     // Memverifikasi session invalidation cancels owned tasks.

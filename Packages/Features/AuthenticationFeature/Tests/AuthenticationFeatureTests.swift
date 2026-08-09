@@ -73,7 +73,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     var receivedOutput: AuthenticationOutput?
     let viewModel = LoginViewModel(
         authenticator: StubAuthenticator(mode: .success(credentials)),
-        output: { receivedOutput = $0 }
+        output: { authenticationOutput in receivedOutput = authenticationOutput }
     )
 
     viewModel.submit()

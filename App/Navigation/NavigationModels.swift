@@ -9,12 +9,12 @@ enum AppTab: String, CaseIterable, Equatable, Hashable, Sendable {
     case more
 
     var screenDescriptor: ScreenDescriptor {
-        ScreenDescriptor(id: "tab.\(rawValue)")
+        ScreenDescriptor(identifier: "tab.\(rawValue)")
     }
 }
 
 struct ScreenDescriptor: Equatable, Sendable {
-    let id: String
+    let identifier: String
 }
 
 struct NavigationDestination<Route: Hashable>: Equatable {

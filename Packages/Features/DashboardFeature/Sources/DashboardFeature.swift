@@ -25,7 +25,7 @@ public struct DashboardRootView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: DSSpacing.lg) {
+            VStack(alignment: .leading, spacing: DSSpacing.large) {
                 Text("Good afternoon").font(.largeTitle.bold())
                 DSFeatureCard(title: "Banking shortcuts") {
                     DSPrimaryButton(title: "Open Transfer", accessibilityIdentifier: DashboardAccessibilityID.transfer)
@@ -41,7 +41,7 @@ public struct DashboardRootView: View {
                 Button("Toggle no-internet blocker") { output(.toggleConnectivityBlocker) }
                     .accessibilityIdentifier(DashboardAccessibilityID.blockerToggle)
             }
-            .padding(DSSpacing.lg)
+            .padding(DSSpacing.large)
         }
         .navigationTitle("Dashboard")
     }

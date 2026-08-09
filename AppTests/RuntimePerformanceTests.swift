@@ -12,7 +12,7 @@ final class RuntimePerformanceTests: XCTestCase {
             for index in 0..<250 {
                 store.push(
                     TransferRoute.result(referenceID: "reference-\(index)"),
-                    screen: ScreenDescriptor(id: "transfer.result")
+                    screen: ScreenDescriptor(identifier: "transfer.result")
                 )
                 store.pop()
             }

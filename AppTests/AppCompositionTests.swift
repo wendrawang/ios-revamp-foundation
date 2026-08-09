@@ -16,13 +16,14 @@ final class AppCompositionTests: XCTestCase {
         let composition = AppComposition(coordinator: coordinator)
         coordinator.authenticatedNavigation.push(
             TransferRoute.result(referenceID: "one"),
-            screen: ScreenDescriptor(id: "transfer.result")
+            screen: ScreenDescriptor(identifier: "transfer.result")
         )
 
         composition.handle(.openWealth(productID: "wealth-001", mode: .currentJourney))
 
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 2)
-        XCTAssertEqual(coordinator.authenticatedNavigation.metadata.map(\.id), ["transfer.result", "wealth.product"])
+        XCTAssertEqual(
+            coordinator.authenticatedNavigation.metadata.map(\.identifier), ["transfer.result", "wealth.product"])
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .dashboard)
     }
 
@@ -32,13 +33,13 @@ final class AppCompositionTests: XCTestCase {
         let composition = AppComposition(coordinator: coordinator)
         coordinator.authenticatedNavigation.push(
             TransferRoute.result(referenceID: "one"),
-            screen: ScreenDescriptor(id: "transfer.result")
+            screen: ScreenDescriptor(identifier: "transfer.result")
         )
 
         composition.handle(.openWealth(productID: "wealth-001", mode: .canonicalFinancial))
 
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 1)
-        XCTAssertEqual(coordinator.authenticatedNavigation.metadata.map(\.id), ["wealth.product"])
+        XCTAssertEqual(coordinator.authenticatedNavigation.metadata.map(\.identifier), ["wealth.product"])
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .financial)
     }
 
@@ -48,11 +49,11 @@ final class AppCompositionTests: XCTestCase {
         let composition = AppComposition(coordinator: coordinator)
 
         composition.handle(DashboardOutput.openTransfer)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "transfer.landing")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "transfer.landing")
 
         coordinator.authenticatedNavigation.popToRoot()
         composition.handle(DashboardOutput.openUpgradeService)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "upgrade.root")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "upgrade.root")
 
         composition.handle(DashboardOutput.toggleConnectivityBlocker)
         XCTAssertEqual(coordinator.container.blockerController.current, .connectivity)
@@ -70,7 +71,7 @@ final class AppCompositionTests: XCTestCase {
 
         container.featureFlags.set(.wealthEntryEnabled, isEnabled: true)
         composition.handle(FinancialHubOutput.openWealth(productID: "wealth-001"))
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "wealth.product")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "wealth.product")
     }
 
     // Memverifikasi more and rewards outputs map without feature imports.
@@ -79,15 +80,15 @@ final class AppCompositionTests: XCTestCase {
         let composition = AppComposition(coordinator: coordinator)
 
         composition.handle(MoreOutput.openWebSample)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "web.sample")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "web.sample")
 
         coordinator.authenticatedNavigation.popToRoot()
         composition.handle(MoreOutput.openUpgradeService)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "upgrade.root")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "upgrade.root")
 
         coordinator.authenticatedNavigation.popToRoot()
         composition.openRewardDetail("reward-001")
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "rewards.detail")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "rewards.detail")
     }
 
     // Memverifikasi transfer upgrade and blocker outputs remain app owned.
@@ -96,7 +97,7 @@ final class AppCompositionTests: XCTestCase {
         let composition = AppComposition(coordinator: coordinator)
 
         composition.handle(TransferOutput.openUpgradeService)
-        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "upgrade.root")
+        XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.identifier, "upgrade.root")
 
         composition.handle(TransferOutput.toggleConnectivityBlocker)
         XCTAssertEqual(coordinator.container.blockerController.current, .connectivity)

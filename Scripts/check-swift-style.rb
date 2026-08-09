@@ -3,6 +3,8 @@
 
 MAX_FILE_LINES = 250
 MAX_METHOD_LINES = 50
+MIN_IDENTIFIER_LENGTH = 3
+MAX_IDENTIFIER_LENGTH = 35
 SWIFT_ROOTS = %w[App AppTests AppUITests Packages].freeze
 IGNORED_SEGMENTS = %w[.build .derived .swiftpm].freeze
 
@@ -52,6 +54,78 @@ def is_method_documented?(lines, method_index)
   comment_index >= 0 && lines[comment_index].strip.start_with?("//")
 end
 
+# Memecah daftar parameter tanpa memisahkan comma di dalam generic atau closure type.
+def split_parameters(content)
+  parameters = []
+  current = +""
+  depth = 0
+  content.each_char do |character|
+    depth += 1 if "([<".include?(character)
+    depth -= 1 if ")] >".delete(" ").include?(character)
+    if character == "," && depth.zero?
+      parameters << current
+      current = +""
+    else
+      current << character
+    end
+  end
+  parameters << current unless current.strip.empty?
+  parameters
+end
+
+# Mengambil nama internal parameter dari signature func atau initializer.
+def method_parameter_names(lines, start_index)
+  signature = lines[start_index, 20].to_a.map { |line| structural_line(line) }.join(" ")
+  declaration = signature.match(/\b(?:func\s+[A-Za-z_][A-Za-z0-9_]*|init)\b/)
+  return [] unless declaration
+
+  opening_index = signature.index("(", declaration.end(0))
+  return [] unless opening_index
+
+  depth = 0
+  closing_index = nil
+  signature.each_char.with_index.drop(opening_index).each do |character, index|
+    depth += 1 if character == "("
+    depth -= 1 if character == ")"
+    if depth.zero?
+      closing_index = index
+      break
+    end
+  end
+  return [] unless closing_index
+
+  content = signature[(opening_index + 1)...closing_index]
+  split_parameters(content).filter_map do |parameter|
+    prefix = parameter.split(":", 2).first
+    tokens = prefix.scan(/[A-Za-z_][A-Za-z0-9_]*/)
+      .reject { |token| %w[inout borrowing consuming isolated sending].include?(token) }
+    tokens.last
+  end
+end
+
+# Mengambil nama parameter closure eksplisit, termasuk closure dengan capture list.
+def closure_parameter_names(structural)
+  match = structural.match(/\{\s*(?:\[[^\]]*\]\s*)?([^{}]*?)\s+in\b/)
+  return [] unless match
+
+  content = match[1].strip
+  return [] if content.empty? || content.start_with?("@")
+
+  split_parameters(content).filter_map do |parameter|
+    prefix = parameter.delete_prefix("(").delete_suffix(")").split(":", 2).first
+    prefix.scan(/[A-Za-z_][A-Za-z0-9_]*/).last
+  end
+end
+
+# Menambahkan pelanggaran bila nama variable berada di luar rentang yang disepakati.
+def validate_identifier(path, line_number, name, violations)
+  return if name.nil? || name == "_"
+  return if (MIN_IDENTIFIER_LENGTH..MAX_IDENTIFIER_LENGTH).cover?(name.length)
+
+  violations << "#{path}:#{line_number} variable '#{name}' harus #{MIN_IDENTIFIER_LENGTH}-" \
+                "#{MAX_IDENTIFIER_LENGTH} karakter"
+end
+
 # Mengumpulkan pelanggaran ukuran, dokumentasi method, dan penamaan boolean.
 def violations_for(path)
   lines = File.readlines(path)
@@ -73,10 +147,42 @@ def violations_for(path)
     if methodLength > MAX_METHOD_LINES
       violations << "#{path}:#{index + 1} method memiliki #{methodLength} baris; maksimum #{MAX_METHOD_LINES}"
     end
+    method_parameter_names(lines, index).each do |name|
+      validate_identifier(path, index + 1, name, violations)
+    end
   end
 
   lines.each_with_index do |line, index|
     structural = structural_line(line)
+    structural.scan(/\b(?:let|var)\s+([A-Za-z_][A-Za-z0-9_]*)/).flatten.each do |name|
+      validate_identifier(path, index + 1, name, violations)
+    end
+    structural.scan(/\b(?:let|var)\s*\(([^)]*)\)/).flatten.each do |tupleContent|
+      split_parameters(tupleContent).each do |binding|
+        tupleName = binding.strip.scan(/[A-Za-z_][A-Za-z0-9_]*/).first
+        validate_identifier(path, index + 1, tupleName, violations)
+      end
+    end
+    structural.scan(/\bfor\s+([A-Za-z_][A-Za-z0-9_]*)\s+in\b/).flatten.each do |name|
+      validate_identifier(path, index + 1, name, violations)
+    end
+    closure_parameter_names(structural).each do |name|
+      validate_identifier(path, index + 1, name, violations)
+    end
+    if (multilineClosure = structural.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s+in\s*$/))
+      validate_identifier(path, index + 1, multilineClosure[1], violations)
+    end
+    if structural.match?(/\$[0-9]+/)
+      violations << "#{path}:#{index + 1} shorthand closure variable harus diberi nama 3-35 karakter"
+    end
+    if (associatedValues = structural.match(/\bcase\s+[A-Za-z_][A-Za-z0-9_]*\((.*)\)/))
+      split_parameters(associatedValues[1]).each do |parameter|
+        next unless parameter.include?(":")
+
+        label = parameter.split(":", 2).first.strip
+        validate_identifier(path, index + 1, label, violations)
+      end
+    end
     structural.scan(/\b([A-Za-z_][A-Za-z0-9_]*)\s*:\s*Bool\b/).flatten.each do |name|
       next if name.start_with?("is")
 
@@ -97,4 +203,5 @@ unless violations.empty?
 end
 
 puts "Swift style checks passed: files <= #{MAX_FILE_LINES} lines, methods <= #{MAX_METHOD_LINES} lines, " \
-     "methods are commented, and boolean flags use the is prefix."
+     "variables are #{MIN_IDENTIFIER_LENGTH}-#{MAX_IDENTIFIER_LENGTH} characters, methods are commented, " \
+     "and boolean flags use the is prefix."

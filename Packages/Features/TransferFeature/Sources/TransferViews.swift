@@ -52,7 +52,7 @@ private struct TransferLandingScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             Image(systemName: "arrow.left.arrow.right.circle.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(DSColor.accent)
@@ -68,7 +68,7 @@ private struct TransferLandingScreen: View {
             }
             .disabled(viewModel.isSubmitting)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Transfer")
         .onDisappear { viewModel.cancel() }
     }
@@ -90,7 +90,7 @@ private struct TransferResultScreen: View {
     }
 
     private var resultContent: some View {
-        VStack(spacing: DSSpacing.md) {
+        VStack(spacing: DSSpacing.medium) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 60)).foregroundStyle(.green)
             Text("Transfer Result")
                 .font(.largeTitle.bold())
@@ -102,7 +102,7 @@ private struct TransferResultScreen: View {
             Button("Toggle connectivity blocker") { output(.toggleConnectivityBlocker) }
                 .accessibilityIdentifier(TransferAccessibilityID.blockerToggle)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
     }
 
     private var wealthButtons: some View {

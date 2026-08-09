@@ -13,6 +13,6 @@ final class ScreenVisitCoordinator {
     // Mencatat screen visit hanya dari navigation state yang sudah committed.
     func screenBecameTopmost(_ screen: ScreenDescriptor) {
         visits.append(screen)
-        analytics.track(AnalyticsEvent(name: "screen_visit", properties: ["screen_id": screen.id]))
+        analytics.track(AnalyticsEvent(name: "screen_visit", properties: ["screen_id": screen.identifier]))
     }
 }

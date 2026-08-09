@@ -2,8 +2,8 @@ import Combine
 import DesignSystem
 import SwiftUI
 
-struct GlobalPresentation: Identifiable, Equatable {
-    let id: String
+struct GlobalPresentation: Equatable {
+    let identifier: String
     let title: String
     let message: String
     let primaryButtonTitle: String
@@ -65,7 +65,9 @@ final class GlobalBlockerController: ObservableObject {
     @Published private(set) var activeBlockers: Set<GlobalBlocker> = []
 
     var current: GlobalBlocker? {
-        activeBlockers.max(by: { $0.priority < $1.priority })
+        activeBlockers.max(by: { firstBlocker, secondBlocker in
+            firstBlocker.priority < secondBlocker.priority
+        })
     }
 
     var isBlocking: Bool { current != nil }

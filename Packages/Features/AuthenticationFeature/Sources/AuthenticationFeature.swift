@@ -28,7 +28,7 @@ public struct AuthenticationDeepLinkParser: Sendable {
             url.host?.lowercased() == "registration",
             url.path == "/continue",
             let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-                .queryItems?.first(where: { $0.name == "token" })?.value,
+                .queryItems?.first(where: { queryItem in queryItem.name == "token" })?.value,
             !token.isEmpty
         else {
             return nil
@@ -129,7 +129,7 @@ public struct LoginScreen: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: DSSpacing.lg) {
+        VStack(alignment: .leading, spacing: DSSpacing.large) {
             Text("Welcome back").font(.largeTitle.bold())
             Text("Use the demo password to continue.").foregroundStyle(.secondary)
             SecureField("Password", text: $viewModel.password)
@@ -148,7 +148,7 @@ public struct LoginScreen: View {
             .disabled(viewModel.isLoading)
             Spacer()
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Password")
         .onDisappear { viewModel.cancel() }
     }
@@ -163,7 +163,7 @@ public struct RegistrationContinuationScreen: View {
     }
 
     public var body: some View {
-        VStack(spacing: DSSpacing.lg) {
+        VStack(spacing: DSSpacing.large) {
             Image(systemName: "person.crop.circle.badge.checkmark").font(.system(size: 52)).foregroundStyle(
                 DSColor.accent)
             Text("Continue registration").font(.title2.bold())
@@ -171,7 +171,7 @@ public struct RegistrationContinuationScreen: View {
                 .secondary)
             Text("Reference: \(token.prefix(4))•••").font(.caption).foregroundStyle(.secondary)
         }
-        .padding(DSSpacing.lg)
+        .padding(DSSpacing.large)
         .navigationTitle("Registration")
         .accessibilityIdentifier(AuthenticationAccessibilityID.registrationContinue)
     }

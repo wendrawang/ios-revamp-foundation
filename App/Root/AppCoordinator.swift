@@ -25,11 +25,11 @@ final class AppCoordinator: ObservableObject {
         let screenVisits = ScreenVisitCoordinator(analytics: container.analytics)
         unauthenticatedNavigation = UnauthenticatedNavigationStore { screen in
             screenVisits.screenBecameTopmost(screen)
-            AppPerformanceSignposts.navigationCommitted(screenID: screen.id)
+            AppPerformanceSignposts.navigationCommitted(screenID: screen.identifier)
         }
         authenticatedNavigation = AuthenticatedNavigationStore { screen in
             screenVisits.screenBecameTopmost(screen)
-            AppPerformanceSignposts.navigationCommitted(screenID: screen.id)
+            AppPerformanceSignposts.navigationCommitted(screenID: screen.identifier)
         }
         deepLinks = DeepLinkOrchestrator(
             registry: container.deepLinkRegistry,
@@ -136,7 +136,7 @@ final class AppCoordinator: ObservableObject {
         } catch {
             container.presentationController.present(
                 GlobalPresentation(
-                    id: "session-establishment-failed",
+                    identifier: "session-establishment-failed",
                     title: "Unable to create session",
                     message: "Please try signing in again.",
                     primaryButtonTitle: "Close"
@@ -168,7 +168,7 @@ final class AppCoordinator: ObservableObject {
                 } catch {
                     container.presentationController.present(
                         GlobalPresentation(
-                            id: "preflight-failed",
+                            identifier: "preflight-failed",
                             title: "Unable to prepare destination",
                             message: "Please try again later.",
                             primaryButtonTitle: "Close"

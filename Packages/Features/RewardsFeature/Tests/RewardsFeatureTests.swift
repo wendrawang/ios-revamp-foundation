@@ -18,7 +18,7 @@ private struct StubHTTPClient: HTTPClient {
 @Test func rewardsRootAndDetailDeepLinksParse() {
     let parser = RewardsDeepLinkParser()
     #expect(parser.parse(URL(string: "iosrevamp://rewards")!) == .root)
-    #expect(parser.parse(URL(string: "iosrevamp://rewards/detail?id=reward-001")!) == .detail(id: "reward-001"))
+    #expect(parser.parse(URL(string: "iosrevamp://rewards/detail?id=reward-001")!) == .detail(identifier: "reward-001"))
 }
 
 // Memverifikasi rewards preflight completes deterministically.
@@ -45,7 +45,7 @@ private struct StubHTTPClient: HTTPClient {
             expectedPath: "/rewards/reward-001"
         ))
 
-    let reward = try await service.reward(id: "reward-001")
+    let reward = try await service.reward(identifier: "reward-001")
 
-    #expect(reward == Reward(id: "reward-001", title: "Featured"))
+    #expect(reward == Reward(identifier: "reward-001", title: "Featured"))
 }

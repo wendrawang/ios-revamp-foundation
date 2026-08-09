@@ -76,7 +76,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
             primaryButtonTitle: "Go"
         ))
     #expect(result.primaryAction == .dismiss)
-    #expect(result.id == "GENERIC")
+    #expect(result.identifier == "GENERIC")
 }
 
 // Memverifikasi transfer view model tracks success and navigates.
@@ -90,7 +90,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
                 mode: .success(TransferReceipt(referenceID: "receipt-001"))
             )),
         analytics: analytics,
-        navigate: { route = $0 }
+        navigate: { navigatedRoute in route = navigatedRoute }
     )
 
     viewModel.submit()
