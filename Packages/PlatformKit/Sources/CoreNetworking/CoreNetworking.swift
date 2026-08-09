@@ -16,6 +16,7 @@ public struct HTTPRequest: Sendable {
     public let body: Data?
     public let timeout: TimeInterval
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         path: String,
         method: HTTPMethod = .get,
@@ -36,6 +37,7 @@ public struct HTTPResponse: Sendable {
     public let headers: [String: String]
     public let body: Data
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(statusCode: Int, headers: [String: String] = [:], body: Data) {
         self.statusCode = statusCode
         self.headers = headers
@@ -56,6 +58,7 @@ public struct RetryPolicy: Sendable {
     public let maximumAttempts: Int
     public let retryableStatusCodes: Set<Int>
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(maximumAttempts: Int = 1, retryableStatusCodes: Set<Int> = [502, 503, 504]) {
         self.maximumAttempts = max(1, maximumAttempts)
         self.retryableStatusCodes = retryableStatusCodes
@@ -63,38 +66,48 @@ public struct RetryPolicy: Sendable {
 }
 
 public protocol RequestHeaderProviding: Sendable {
+    // Menyediakan header generik yang akan digabungkan ke HTTP request.
     func headers() async -> [String: String]
 }
 
 public struct EmptyRequestHeaderProvider: RequestHeaderProviding {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
+    // Menyediakan header generik yang akan digabungkan ke HTTP request.
     public func headers() async -> [String: String] { [:] }
 }
 
 public protocol TransportSecurityEvaluating: Sendable {
+    // Memvalidasi kebijakan transport dan TLS sebelum request dikirim.
     func prepareRequest(for host: String) async throws
 }
 
 public struct SystemTransportSecurityEvaluator: TransportSecurityEvaluating {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
+    // Memvalidasi kebijakan transport dan TLS sebelum request dikirim.
     public func prepareRequest(for host: String) async throws {}
 }
 
 public protocol HTTPTransport: Sendable {
+    // Menjalankan operasi dependency atau use case yang dibungkus tipe ini.
     func execute(_ request: URLRequest) async throws -> HTTPResponse
 }
 
 public protocol HTTPClient: Sendable {
+    // Membangun dan mengirim HTTP request dengan retry serta logging aman.
     func send(_ request: HTTPRequest) async throws -> HTTPResponse
 }
 
 public final class URLSessionTransport: HTTPTransport, @unchecked Sendable {
     private let session: URLSession
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(session: URLSession = .shared) {
         self.session = session
     }
 
+    // Menjalankan operasi dependency atau use case yang dibungkus tipe ini.
     public func execute(_ request: URLRequest) async throws -> HTTPResponse {
         do {
             let (data, response) = try await session.data(for: request)
@@ -121,6 +134,7 @@ public final class DefaultHTTPClient: HTTPClient, @unchecked Sendable {
     private let retryPolicy: RetryPolicy
     private let logger: any AppLogging
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         baseURL: URL,
         transport: any HTTPTransport,
@@ -137,9 +151,11 @@ public final class DefaultHTTPClient: HTTPClient, @unchecked Sendable {
         self.logger = logger
     }
 
+    // Membangun dan mengirim HTTP request dengan retry serta logging aman.
     public func send(_ request: HTTPRequest) async throws -> HTTPResponse {
         guard let url = URL(string: request.path, relativeTo: baseURL)?.absoluteURL,
-              let host = url.host else {
+            let host = url.host
+        else {
             throw NetworkError.invalidURL
         }
         try await securityEvaluator.prepareRequest(for: host)
@@ -147,27 +163,32 @@ public final class DefaultHTTPClient: HTTPClient, @unchecked Sendable {
         urlRequest.httpMethod = request.method.rawValue
         urlRequest.httpBody = request.body
         let commonHeaders = await headerProvider.headers()
-        commonHeaders.merging(request.headers) { _, requestValue in requestValue }
-            .forEach { urlRequest.setValue($0.value, forHTTPHeaderField: $0.key) }
+        let mergedHeaders = commonHeaders.merging(request.headers) { _, requestValue in requestValue }
+        for header in mergedHeaders {
+            urlRequest.setValue(header.value, forHTTPHeaderField: header.key)
+        }
 
         var lastResponse: HTTPResponse?
         for attempt in 1...retryPolicy.maximumAttempts {
-            logger.log(LogEntry(
-                level: .debug,
-                category: "network",
-                message: "HTTP request",
-                fields: [
-                    LogField(name: "method", value: request.method.rawValue, privacy: .public),
-                    LogField(name: "host", value: host, privacy: .public),
-                    LogField(name: "authorization", value: request.headers["Authorization"] ?? "", privacy: .sensitive),
-                ]
-            ))
+            logger.log(
+                LogEntry(
+                    level: .debug,
+                    category: "network",
+                    message: "HTTP request",
+                    fields: [
+                        LogField(name: "method", value: request.method.rawValue, privacy: .public),
+                        LogField(name: "host", value: host, privacy: .public),
+                        LogField(
+                            name: "authorization", value: request.headers["Authorization"] ?? "", privacy: .sensitive),
+                    ]
+                ))
             let response = try await transport.execute(urlRequest)
             lastResponse = response
             if (200..<300).contains(response.statusCode) {
                 return response
             }
-            if !retryPolicy.retryableStatusCodes.contains(response.statusCode) || attempt == retryPolicy.maximumAttempts {
+            if !retryPolicy.retryableStatusCodes.contains(response.statusCode) || attempt == retryPolicy.maximumAttempts
+            {
                 throw NetworkError.unacceptableStatus(response.statusCode)
             }
         }
@@ -175,8 +196,9 @@ public final class DefaultHTTPClient: HTTPClient, @unchecked Sendable {
     }
 }
 
-public extension HTTPResponse {
-    func decode<Value: Decodable & Sendable>(
+extension HTTPResponse {
+    // Mendekode response body menjadi model bertipe atau error terkontrol.
+    public func decode<Value: Decodable & Sendable>(
         _ type: Value.Type,
         decoder: JSONDecoder = JSONDecoder()
     ) throws -> Value {
@@ -191,10 +213,12 @@ public extension HTTPResponse {
 public struct ClosureHTTPTransport: HTTPTransport {
     private let operation: @Sendable (URLRequest) async throws -> HTTPResponse
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(operation: @escaping @Sendable (URLRequest) async throws -> HTTPResponse) {
         self.operation = operation
     }
 
+    // Menjalankan operasi dependency atau use case yang dibungkus tipe ini.
     public func execute(_ request: URLRequest) async throws -> HTTPResponse {
         try await operation(request)
     }

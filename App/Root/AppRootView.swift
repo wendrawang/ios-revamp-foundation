@@ -33,6 +33,7 @@ struct AppRootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var coordinator: AppCoordinator
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(coordinator: AppCoordinator) {
         _coordinator = StateObject(wrappedValue: coordinator)
     }

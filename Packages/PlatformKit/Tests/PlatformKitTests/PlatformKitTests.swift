@@ -11,6 +11,7 @@ private final class AttemptCounter: @unchecked Sendable {
     private let lock = NSLock()
     private var storage = 0
 
+    // Menambah hitungan HTTP attempt secara thread-safe.
     func increment() -> Int {
         lock.withLock {
             storage += 1
@@ -21,37 +22,43 @@ private final class AttemptCounter: @unchecked Sendable {
     var value: Int { lock.withLock { storage } }
 }
 
+// Memverifikasi analytics stores privacy safe events.
 @Test func analyticsStoresPrivacySafeEvents() {
     let analytics = InMemoryAnalytics()
     analytics.track(AnalyticsEvent(name: "screen_visit", properties: ["screen": "rewards.detail"]))
 
-    #expect(analytics.events() == [
-        AnalyticsEvent(name: "screen_visit", properties: ["screen": "rewards.detail"]),
-    ])
+    #expect(
+        analytics.events() == [
+            AnalyticsEvent(name: "screen_visit", properties: ["screen": "rewards.detail"])
+        ])
 }
 
+// Memverifikasi sensitive logging fields are redacted.
 @Test func sensitiveLoggingFieldsAreRedacted() {
     let logger = InMemoryLogger()
-    logger.log(LogEntry(
-        level: .info,
-        category: "test",
-        message: "Login",
-        fields: [LogField(name: "token", value: "secret-token", privacy: .sensitive)]
-    ))
+    logger.log(
+        LogEntry(
+            level: .info,
+            category: "test",
+            message: "Login",
+            fields: [LogField(name: "token", value: "secret-token", privacy: .sensitive)]
+        ))
 
     let rendered = logger.entries().map(\.sanitizedDescription).joined()
     #expect(!rendered.contains("secret-token"))
     #expect(rendered.contains("<redacted>"))
 }
 
+// Memverifikasi in memory feature flags are deterministic.
 @Test func inMemoryFeatureFlagsAreDeterministic() {
     let flags = InMemoryFeatureFlags(enabled: [.wealthEntryEnabled], logger: InMemoryLogger())
     #expect(flags.isEnabled(.wealthEntryEnabled))
-    flags.set(.wealthEntryEnabled, enabled: false)
+    flags.set(.wealthEntryEnabled, isEnabled: false)
     #expect(!flags.isEnabled(.wealthEntryEnabled))
 }
 
-@Test func HTTPClientUsesTransportAndDecodesResponse() async throws {
+// Memverifikasi HTTP client memakai transport terinjeksi dan mendekode response.
+@Test func httpClientUsesTransportAndDecodesResponse() async throws {
     struct Payload: Codable, Equatable, Sendable { let value: String }
     let transport = ClosureHTTPTransport { request in
         #expect(request.url?.absoluteString == "https://example.test/value")
@@ -67,7 +74,8 @@ private final class AttemptCounter: @unchecked Sendable {
     #expect(try response.decode(Payload.self) == Payload(value: "ok"))
 }
 
-@Test func HTTPClientRetriesOnlyConfiguredStatuses() async throws {
+// Memverifikasi HTTP client hanya melakukan retry pada status yang dikonfigurasi.
+@Test func httpClientRetriesOnlyConfiguredStatuses() async throws {
     let attempts = AttemptCounter()
     let transport = ClosureHTTPTransport { _ in
         attempts.increment() == 1
@@ -87,7 +95,8 @@ private final class AttemptCounter: @unchecked Sendable {
     #expect(attempts.value == 2)
 }
 
-@Test func HTTPClientDoesNotRetryUnconfiguredClientError() async {
+// Memverifikasi HTTP client tidak mengulang client error yang tidak retryable.
+@Test func httpClientDoesNotRetryUnconfiguredClientError() async {
     let attempts = AttemptCounter()
     let transport = ClosureHTTPTransport { _ in
         _ = attempts.increment()
@@ -111,7 +120,8 @@ private final class AttemptCounter: @unchecked Sendable {
     #expect(attempts.value == 1)
 }
 
-@Test func HTTPResponseReportsDecodingFailureWithoutPayloadLeak() {
+// Memverifikasi decoding failure dipetakan tanpa membocorkan response payload.
+@Test func httpResponseReportsDecodingFailureWithoutPayloadLeak() {
     struct Payload: Codable, Sendable { let value: String }
     let response = HTTPResponse(statusCode: 200, body: Data("not-json".utf8))
 
@@ -128,6 +138,7 @@ private final class AttemptCounter: @unchecked Sendable {
     }
 }
 
+// Memverifikasi in memory credential vault round trips and removes data.
 @Test func inMemoryCredentialVaultRoundTripsAndRemovesData() async throws {
     let vault = InMemoryCredentialVault()
     let value = Data("credential".utf8)
@@ -138,6 +149,7 @@ private final class AttemptCounter: @unchecked Sendable {
     #expect(await vault.read(key: "session") == nil)
 }
 
+// Memverifikasi transport security rejects unknown hosts and empty pin configuration.
 @Test func transportSecurityRejectsUnknownHostsAndEmptyPinConfiguration() async {
     let logger = InMemoryLogger()
     let hostRestricted = AppTransportSecurityEvaluator(
@@ -170,6 +182,7 @@ private final class AttemptCounter: @unchecked Sendable {
     }
 }
 
+// Memverifikasi session invalidation clears credentials.
 @Test func sessionInvalidationClearsCredentials() async throws {
     let manager = SessionCredentialManager(vault: InMemoryCredentialVault(), logger: InMemoryLogger())
     try await manager.establish(SessionCredentials(accessToken: "a", refreshToken: "r", userID: "u"))

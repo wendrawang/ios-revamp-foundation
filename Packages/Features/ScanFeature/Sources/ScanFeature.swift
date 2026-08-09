@@ -5,7 +5,9 @@ import SwiftUI
 @MainActor
 public protocol CameraControlling: AnyObject {
     var isRunning: Bool { get }
+    // Memulai resource atau flow yang dimiliki tipe ini.
     func start()
+    // Menghentikan resource agar tidak melewati lifetime pemiliknya.
     func stop()
 }
 
@@ -15,14 +17,17 @@ public final class SampleCameraController: CameraControlling, ObservableObject {
     public private(set) var startCount = 0
     public private(set) var stopCount = 0
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Memulai resource atau flow yang dimiliki tipe ini.
     public func start() {
         guard !isRunning else { return }
         isRunning = true
         startCount += 1
     }
 
+    // Menghentikan resource agar tidak melewati lifetime pemiliknya.
     public func stop() {
         guard isRunning else { return }
         isRunning = false
@@ -35,12 +40,14 @@ public final class ScanViewModel: ObservableObject {
     @Published public private(set) var isCameraRunning = false
     private let camera: any CameraControlling
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(camera: any CameraControlling) {
         self.camera = camera
     }
 
-    public func setOperational(_ operational: Bool) {
-        if operational {
+    // Menyalakan atau mematikan camera sesuai aktivitas tab dan lifecycle.
+    public func setOperational(_ isOperational: Bool) {
+        if isOperational {
             camera.start()
         } else {
             camera.stop()
@@ -48,6 +55,7 @@ public final class ScanViewModel: ObservableObject {
         isCameraRunning = camera.isRunning
     }
 
+    // Menghentikan resource yang masih dimiliki saat instance dilepas.
     deinit {
         MainActor.assumeIsolated { camera.stop() }
     }
@@ -57,6 +65,7 @@ public struct ScanRootView: View {
     @ObservedObject private var viewModel: ScanViewModel
     private let isOperational: Bool
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(viewModel: ScanViewModel, isOperational: Bool) {
         self.viewModel = viewModel
         self.isOperational = isOperational
@@ -74,8 +83,10 @@ public struct ScanRootView: View {
                     }
                 }
                 .aspectRatio(0.82, contentMode: .fit)
-            Text("The sample uses a camera abstraction. Production capture can replace it behind the same lifetime contract.")
-                .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text(
+                "The sample uses a camera abstraction. Production capture can replace it behind the same lifetime contract."
+            )
+            .font(.footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .padding(DSSpacing.lg)
         .navigationTitle("Scan")
@@ -84,4 +95,3 @@ public struct ScanRootView: View {
         .onDisappear { viewModel.setOperational(false) }
     }
 }
-

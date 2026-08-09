@@ -1,4 +1,3 @@
-@testable import IOSRevampFoundation
 import CoreFeatureFlags
 import DashboardFeature
 import FinancialHubFeature
@@ -7,8 +6,11 @@ import TransferFeature
 import WealthFeature
 import XCTest
 
+@testable import IOSRevampFoundation
+
 @MainActor
 final class AppCompositionTests: XCTestCase {
+    // Memverifikasi transfer current journey appends wealth.
     func testTransferCurrentJourneyAppendsWealth() {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let composition = AppComposition(coordinator: coordinator)
@@ -24,6 +26,7 @@ final class AppCompositionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .dashboard)
     }
 
+    // Memverifikasi transfer canonical wealth replaces journey.
     func testTransferCanonicalWealthReplacesJourney() {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let composition = AppComposition(coordinator: coordinator)
@@ -39,6 +42,7 @@ final class AppCompositionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.selectedTab, .financial)
     }
 
+    // Memverifikasi dashboard maps to shared feature routes and blocker.
     func testDashboardMapsToSharedFeatureRoutesAndBlocker() {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let composition = AppComposition(coordinator: coordinator)
@@ -54,20 +58,22 @@ final class AppCompositionTests: XCTestCase {
         XCTAssertEqual(coordinator.container.blockerController.current, .connectivity)
     }
 
+    // Memverifikasi financial hub honors wealth feature flag.
     func testFinancialHubHonorsWealthFeatureFlag() {
         let container = AppContainer(isUITesting: true)
         let coordinator = AppCoordinator(container: container)
         let composition = AppComposition(coordinator: coordinator)
 
-        container.featureFlags.set(.wealthEntryEnabled, enabled: false)
+        container.featureFlags.set(.wealthEntryEnabled, isEnabled: false)
         composition.handle(FinancialHubOutput.openWealth(productID: "disabled"))
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 0)
 
-        container.featureFlags.set(.wealthEntryEnabled, enabled: true)
+        container.featureFlags.set(.wealthEntryEnabled, isEnabled: true)
         composition.handle(FinancialHubOutput.openWealth(productID: "wealth-001"))
         XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "wealth.product")
     }
 
+    // Memverifikasi more and rewards outputs map without feature imports.
     func testMoreAndRewardsOutputsMapWithoutFeatureImports() {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let composition = AppComposition(coordinator: coordinator)
@@ -84,6 +90,7 @@ final class AppCompositionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "rewards.detail")
     }
 
+    // Memverifikasi transfer upgrade and blocker outputs remain app owned.
     func testTransferUpgradeAndBlockerOutputsRemainAppOwned() {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let composition = AppComposition(coordinator: coordinator)

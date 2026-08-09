@@ -11,6 +11,7 @@ import WealthFeature
 struct AppComposition {
     let coordinator: AppCoordinator
 
+    // Memetakan typed feature output menjadi keputusan milik AppComposition.
     func handle(_ output: DashboardOutput) {
         switch output {
         case .openTransfer:
@@ -28,9 +29,10 @@ struct AppComposition {
         }
     }
 
+    // Memetakan typed feature output menjadi keputusan milik AppComposition.
     func handle(_ output: FinancialHubOutput) {
         switch output {
-        case let .openWealth(productID):
+        case .openWealth(let productID):
             guard coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled) else { return }
             coordinator.authenticatedNavigation.push(
                 WealthRoute.product(id: productID),
@@ -39,6 +41,7 @@ struct AppComposition {
         }
     }
 
+    // Memetakan typed feature output menjadi keputusan milik AppComposition.
     func handle(_ output: MoreOutput) {
         switch output {
         case .openUpgradeService:
@@ -57,9 +60,10 @@ struct AppComposition {
         }
     }
 
+    // Memetakan typed feature output menjadi keputusan milik AppComposition.
     func handle(_ output: TransferOutput) {
         switch output {
-        case let .openWealth(productID, mode):
+        case .openWealth(let productID, let mode):
             guard coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled) else { return }
             let destination = NavigationDestination(
                 route: WealthRoute.product(id: productID),
@@ -81,6 +85,7 @@ struct AppComposition {
         }
     }
 
+    // Membuka Rewards detail melalui route konkret milik RewardsFeature.
     func openRewardDetail(_ id: String) {
         coordinator.authenticatedNavigation.push(
             RewardsRoute.detail(id: id),

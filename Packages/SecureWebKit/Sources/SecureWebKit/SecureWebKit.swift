@@ -8,6 +8,7 @@ public struct SecureWebConfiguration: Sendable {
     public let initialHTML: String
     public let baseURL: URL?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(allowedHosts: Set<String>, initialHTML: String, baseURL: URL? = nil) {
         self.allowedHosts = allowedHosts
         self.initialHTML = initialHTML
@@ -24,10 +25,12 @@ public enum WebNavigationDecision: Equatable, Sendable {
 public struct WebNavigationPolicy: Sendable {
     private let allowedHosts: Set<String>
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(allowedHosts: Set<String>) {
         self.allowedHosts = allowedHosts
     }
 
+    // Memisahkan application deep-link interception dari HTTPS host policy.
     public func decision(for url: URL) -> WebNavigationDecision {
         guard url.scheme?.lowercased() == "https", let host = url.host?.lowercased() else { return .reject }
         return allowedHosts.contains(host) ? .allow : .reject
@@ -38,11 +41,13 @@ public struct SecureWebNavigationDecider: Sendable {
     private let policy: WebNavigationPolicy
     private let isApplicationDeepLink: @Sendable (URL) -> Bool
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(policy: WebNavigationPolicy, isApplicationDeepLink: @escaping @Sendable (URL) -> Bool) {
         self.policy = policy
         self.isApplicationDeepLink = isApplicationDeepLink
     }
 
+    // Memisahkan application deep-link interception dari HTTPS host policy.
     public func decision(for url: URL) -> WebNavigationDecision {
         isApplicationDeepLink(url) ? .applicationDeepLink : policy.decision(for: url)
     }
@@ -54,6 +59,7 @@ public struct SecureWebView: UIViewRepresentable {
     private let isApplicationDeepLink: @Sendable (URL) -> Bool
     private let submitApplicationDeepLink: @Sendable (URL) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         configuration: SecureWebConfiguration,
         logger: any AppLogging,
@@ -66,6 +72,7 @@ public struct SecureWebView: UIViewRepresentable {
         self.submitApplicationDeepLink = submitApplicationDeepLink
     }
 
+    // Membuat coordinator WebKit yang memiliki policy dan callback terinjeksi.
     public func makeCoordinator() -> SecureWebCoordinator {
         SecureWebCoordinator(
             decider: SecureWebNavigationDecider(
@@ -77,6 +84,7 @@ public struct SecureWebView: UIViewRepresentable {
         )
     }
 
+    // Membuat WKWebView dan memasang delegate yang dimiliki coordinator.
     public func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         webView.navigationDelegate = context.coordinator
@@ -84,8 +92,10 @@ public struct SecureWebView: UIViewRepresentable {
         return webView
     }
 
+    // Menjaga UIViewRepresentable tanpa memuat ulang halaman secara tidak perlu.
     public func updateUIView(_ webView: WKWebView, context: Context) {}
 
+    // Membersihkan delegate WebKit sebelum view dilepas.
     public static func dismantleUIView(_ webView: WKWebView, coordinator: SecureWebCoordinator) {
         coordinator.cleanup(webView: webView)
     }
@@ -98,6 +108,7 @@ public final class SecureWebCoordinator: NSObject, WKNavigationDelegate {
     private let logger: any AppLogging
     public private(set) var isCleanedUp = false
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         decider: SecureWebNavigationDecider,
         submitApplicationDeepLink: @escaping @Sendable (URL) -> Void,
@@ -108,6 +119,7 @@ public final class SecureWebCoordinator: NSObject, WKNavigationDelegate {
         self.logger = logger
     }
 
+    // Memutuskan allow atau cancel untuk setiap WKWebView navigation action.
     public func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
@@ -120,6 +132,7 @@ public final class SecureWebCoordinator: NSObject, WKNavigationDelegate {
         decisionHandler(navigationPolicy(for: url))
     }
 
+    // Mengevaluasi URL normal melalui HTTPS dan allowed-host policy.
     public func navigationPolicy(for url: URL) -> WKNavigationActionPolicy {
         switch decider.decision(for: url) {
         case .applicationDeepLink:
@@ -129,16 +142,18 @@ public final class SecureWebCoordinator: NSObject, WKNavigationDelegate {
         case .allow:
             return .allow
         case .reject:
-            logger.log(LogEntry(
-                level: .warning,
-                category: "web",
-                message: "Rejected web navigation",
-                fields: [LogField(name: "host", value: url.host ?? "unknown", privacy: .public)]
-            ))
+            logger.log(
+                LogEntry(
+                    level: .warning,
+                    category: "web",
+                    message: "Rejected web navigation",
+                    fields: [LogField(name: "host", value: url.host ?? "unknown", privacy: .public)]
+                ))
             return .cancel
         }
     }
 
+    // Melepas delegate serta callback WebKit untuk mencegah retain cycle.
     public func cleanup(webView: WKWebView) {
         webView.stopLoading()
         webView.navigationDelegate = nil

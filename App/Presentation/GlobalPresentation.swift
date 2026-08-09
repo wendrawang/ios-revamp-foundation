@@ -14,6 +14,7 @@ final class GlobalPresentationController: ObservableObject {
     @Published private(set) var current: GlobalPresentation?
     private var queue: [GlobalPresentation] = []
 
+    // Menampilkan presentasi global atau memasukkannya ke antrean.
     func present(_ presentation: GlobalPresentation) {
         guard current == nil else {
             queue.append(presentation)
@@ -22,6 +23,7 @@ final class GlobalPresentationController: ObservableObject {
         current = presentation
     }
 
+    // Menutup presentasi aktif dan menampilkan antrean berikutnya bila ada.
     func dismiss() {
         current = queue.isEmpty ? nil : queue.removeFirst()
     }
@@ -68,9 +70,12 @@ final class GlobalBlockerController: ObservableObject {
 
     var isBlocking: Bool { current != nil }
 
+    // Mengaktifkan blocker agar host global menampilkannya.
     func show(_ blocker: GlobalBlocker) { activeBlockers.insert(blocker) }
+    // Menghapus blocker tanpa mengubah navigation state.
     func hide(_ blocker: GlobalBlocker) { activeBlockers.remove(blocker) }
 
+    // Mengubah status blocker connectivity untuk kebutuhan sample dan test.
     func toggleConnectivity() {
         if activeBlockers.contains(.connectivity) {
             hide(.connectivity)

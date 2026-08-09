@@ -13,6 +13,7 @@ public struct FinancialHubRootView: View {
     private let isWealthEnabled: Bool
     private let output: (FinancialHubOutput) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(isWealthEnabled: Bool, output: @escaping (FinancialHubOutput) -> Void) {
         self.isWealthEnabled = isWealthEnabled
         self.output = output
@@ -34,6 +35,7 @@ public struct FinancialHubRootView: View {
         .navigationTitle("Financial")
     }
 
+    // Membangun card Financial dengan output navigation bertipe.
     private func financialCard(title: String, icon: String) -> some View {
         HStack(spacing: DSSpacing.md) {
             Image(systemName: icon).font(.title2).foregroundStyle(DSColor.accent)

@@ -23,6 +23,7 @@ public struct DSPrimaryButton: View {
     private let accessibilityIdentifier: String?
     private let action: () -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(title: String, accessibilityIdentifier: String? = nil, action: @escaping () -> Void) {
         self.title = title
         self.accessibilityIdentifier = accessibilityIdentifier
@@ -45,6 +46,7 @@ public struct DSFeatureCard<Content: View>: View {
     private let title: String
     private let content: () -> Content
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(title: String, @ViewBuilder content: @escaping () -> Content) {
         self.title = title
         self.content = content
@@ -69,6 +71,7 @@ public struct DSBottomSheetScaffold: View {
     private let onPrimary: () -> Void
     private let onDismiss: () -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         title: String,
         message: String,
@@ -116,6 +119,7 @@ public struct DSBlockerView: View {
     private let accessibilityIdentifier: String
     private let action: (() -> Void)?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         icon: String,
         title: String,
@@ -159,6 +163,7 @@ public struct DSTabItem<ID: Hashable>: Identifiable {
     public let accessibilityIdentifier: String
     public let isElevated: Bool
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         id: ID,
         title: String,
@@ -179,6 +184,7 @@ public struct DSCustomTabBar<ID: Hashable>: View {
     private let selection: ID
     private let onSelect: (ID) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(items: [DSTabItem<ID>], selection: ID, onSelect: @escaping (ID) -> Void) {
         self.items = items
         self.selection = selection
@@ -188,7 +194,9 @@ public struct DSCustomTabBar<ID: Hashable>: View {
     public var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
             ForEach(items) { item in
-                Button { onSelect(item.id) } label: {
+                Button {
+                    onSelect(item.id)
+                } label: {
                     VStack(spacing: 3) {
                         Image(systemName: item.systemImage)
                             .font(item.isElevated ? .title2.bold() : .title3)
@@ -214,8 +222,8 @@ public struct DSCustomTabBar<ID: Hashable>: View {
         .background(.regularMaterial)
     }
 
+    // Memilih warna visual tab berdasarkan selected state.
     private func color(for item: DSTabItem<ID>) -> Color {
         selection == item.id ? DSColor.accent : DSColor.textSecondary
     }
 }
-

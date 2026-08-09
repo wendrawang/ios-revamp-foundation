@@ -18,15 +18,18 @@ public enum RewardsDeepLinkIntent: Equatable, Sendable {
 }
 
 public struct RewardsDeepLinkParser: Sendable {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Mengubah URL yang cocok menjadi intent domain bertipe.
     public func parse(_ url: URL) -> RewardsDeepLinkIntent? {
         guard url.scheme?.lowercased() == "iosrevamp", url.host?.lowercased() == "rewards" else { return nil }
         if url.path.isEmpty || url.path == "/" { return .root }
         guard url.path == "/detail",
-              let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "id" })?.value,
-              !id.isEmpty else { return nil }
+            !id.isEmpty
+        else { return nil }
         return .detail(id: id)
     }
 }
@@ -34,32 +37,42 @@ public struct RewardsDeepLinkParser: Sendable {
 public struct Reward: Codable, Equatable, Sendable {
     public let id: String
     public let title: String
-    public init(id: String, title: String) { self.id = id; self.title = title }
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
+    public init(id: String, title: String) {
+        self.id = id
+        self.title = title
+    }
 }
 
 public protocol RewardsServicing: Sendable {
+    // Mengambil detail Rewards melalui service domain.
     func reward(id: String) async throws -> Reward
 }
 
 public struct RemoteRewardsService: RewardsServicing {
     private let client: any HTTPClient
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(client: any HTTPClient) { self.client = client }
+    // Mengambil detail Rewards melalui service domain.
     public func reward(id: String) async throws -> Reward {
         try await client.send(HTTPRequest(path: "/rewards/\(id)")).decode(Reward.self)
     }
 }
 
 public protocol RewardsPreflighting: Sendable {
+    // Menjalankan inquiry atau preflight sebelum destination ditampilkan.
     func prepare(rewardID: String) async throws
 }
 
 public struct DummyRewardsPreflightUseCase: RewardsPreflighting {
     private let delayNanoseconds: UInt64
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(delayNanoseconds: UInt64 = 300_000_000) {
         self.delayNanoseconds = delayNanoseconds
     }
 
+    // Menjalankan inquiry atau preflight sebelum destination ditampilkan.
     public func prepare(rewardID: String) async throws {
         try await Task.sleep(nanoseconds: delayNanoseconds)
         try Task.checkCancellation()
@@ -69,6 +82,7 @@ public struct DummyRewardsPreflightUseCase: RewardsPreflighting {
 public struct RewardsRootView: View {
     private let openDetail: (String) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(openDetail: @escaping (String) -> Void) {
         self.openDetail = openDetail
     }
@@ -79,7 +93,9 @@ public struct RewardsRootView: View {
                 Text("Rewards").font(.largeTitle.bold()).frame(maxWidth: .infinity, alignment: .leading)
                 DSFeatureCard(title: "Points") {
                     Text("1,478 points").font(.title2.bold())
-                    DSPrimaryButton(title: "View featured reward", accessibilityIdentifier: RewardsAccessibilityID.openDetail) {
+                    DSPrimaryButton(
+                        title: "View featured reward", accessibilityIdentifier: RewardsAccessibilityID.openDetail
+                    ) {
                         openDetail("reward-001")
                     }
                 }
@@ -93,6 +109,7 @@ public struct RewardsRootView: View {
 public struct RewardDetailScreen: View {
     private let rewardID: String
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(rewardID: String) {
         self.rewardID = rewardID
     }

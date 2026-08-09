@@ -13,6 +13,11 @@ The gate performs, in order:
 5. navigation memory/clock and application-launch performance metrics;
 6. code-coverage generation and the combined app coverage floor.
 
+The architecture step also runs the repository-owned Swift style linter. It
+enforces a 250-line file limit, a 50-line method limit, a purpose comment for
+every method, and the `is` prefix for boolean flags and parameters. Apple
+`swift-format` also runs in strict mode using the checked-in `.swift-format`.
+
 ## Definition of covered
 
 “Covered” means an important behavior has a deterministic assertion, not merely

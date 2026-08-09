@@ -20,6 +20,9 @@
 - Keep accessibility identifiers stable and namespaced.
 - Logs and analytics must be structured, privacy-safe, and redacted.
 - Add or update deterministic tests whenever behavior or an architecture boundary changes.
+- Add a concise Indonesian `//` purpose comment to every method and initializer.
+- Keep each Swift file at 250 lines or fewer and each method at 50 lines or fewer.
+- Prefix every boolean flag, state, property, and boolean parameter with `is`.
 - Keep every business domain in its own Local SPM with an executable test target.
 - Run `Scripts/run-quality-gates.sh` for architecture-sensitive or release-bound changes.
 - Treat coverage as a regression floor; test domain behavior and failure/cancellation paths rather than writing percentage-only tests.

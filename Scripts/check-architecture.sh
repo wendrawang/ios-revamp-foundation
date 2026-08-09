@@ -6,6 +6,9 @@ cd "$repo_root"
 
 failure=0
 
+./Scripts/check-swift-style.rb
+./Scripts/check-swift-format.sh
+
 report_matches() {
     local message="$1"
     shift
@@ -79,4 +82,4 @@ if [[ "$failure" != "0" ]]; then
     exit 1
 fi
 
-echo "Architecture checks passed: every domain is an independently tested Local SPM, package manifests resolve, dependency imports are clean, and exactly two primary NavigationStacks exist."
+echo "Architecture checks passed: Swift style, independent domain SPMs, package manifests, dependency imports, and exactly two primary NavigationStacks are valid."

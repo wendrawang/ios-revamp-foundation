@@ -19,6 +19,7 @@ public struct LogField: Equatable, Sendable {
     public let value: String
     public let privacy: LogPrivacy
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(name: String, value: String, privacy: LogPrivacy) {
         self.name = name
         self.value = value
@@ -36,6 +37,7 @@ public struct LogEntry: Equatable, Sendable {
     public let message: String
     public let fields: [LogField]
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(level: LogLevel, category: String, message: String, fields: [LogField] = []) {
         self.level = level
         self.category = category
@@ -50,6 +52,7 @@ public struct LogEntry: Equatable, Sendable {
 }
 
 public protocol AppLogging: Sendable {
+    // Menerima structured log dan meredaksi field sensitif sebelum disimpan.
     func log(_ entry: LogEntry)
 }
 
@@ -57,8 +60,10 @@ public final class InMemoryLogger: AppLogging, @unchecked Sendable {
     private let lock = NSLock()
     private var storage: [LogEntry] = []
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Menerima structured log dan meredaksi field sensitif sebelum disimpan.
     public func log(_ entry: LogEntry) {
         let sanitized = LogEntry(
             level: entry.level,
@@ -71,6 +76,7 @@ public final class InMemoryLogger: AppLogging, @unchecked Sendable {
         lock.withLock { storage.append(sanitized) }
     }
 
+    // Mengambil snapshot structured log untuk debug atau assertion test.
     public func entries() -> [LogEntry] {
         lock.withLock { storage }
     }
@@ -79,10 +85,12 @@ public final class InMemoryLogger: AppLogging, @unchecked Sendable {
 public final class OSAppLogger: AppLogging, @unchecked Sendable {
     private let subsystem: String
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(subsystem: String) {
         self.subsystem = subsystem
     }
 
+    // Menerima structured log dan meredaksi field sensitif sebelum disimpan.
     public func log(_ entry: LogEntry) {
         let logger = Logger(subsystem: subsystem, category: entry.category)
         let value = entry.sanitizedDescription
@@ -95,4 +103,3 @@ public final class OSAppLogger: AppLogging, @unchecked Sendable {
         }
     }
 }
-

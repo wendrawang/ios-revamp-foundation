@@ -17,6 +17,7 @@ public struct DashboardRootView: View {
     private let isTransferEnabled: Bool
     private let output: (DashboardOutput) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(isTransferEnabled: Bool, output: @escaping (DashboardOutput) -> Void) {
         self.isTransferEnabled = isTransferEnabled
         self.output = output
@@ -27,11 +28,13 @@ public struct DashboardRootView: View {
             VStack(alignment: .leading, spacing: DSSpacing.lg) {
                 Text("Good afternoon").font(.largeTitle.bold())
                 DSFeatureCard(title: "Banking shortcuts") {
-                    DSPrimaryButton(title: "Open Transfer", accessibilityIdentifier: DashboardAccessibilityID.transfer) {
+                    DSPrimaryButton(title: "Open Transfer", accessibilityIdentifier: DashboardAccessibilityID.transfer)
+                    {
                         output(.openTransfer)
                     }
                     .disabled(!isTransferEnabled)
-                    DSPrimaryButton(title: "Upgrade Service", accessibilityIdentifier: DashboardAccessibilityID.upgrade) {
+                    DSPrimaryButton(title: "Upgrade Service", accessibilityIdentifier: DashboardAccessibilityID.upgrade)
+                    {
                         output(.openUpgradeService)
                     }
                 }

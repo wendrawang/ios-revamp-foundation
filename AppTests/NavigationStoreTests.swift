@@ -1,11 +1,13 @@
-@testable import IOSRevampFoundation
 import SwiftUI
 import TransferFeature
 import WealthFeature
 import XCTest
 
+@testable import IOSRevampFoundation
+
 @MainActor
 final class NavigationStoreTests: XCTestCase {
+    // Memverifikasi push and programmatic pop keep path and metadata consistent.
     func testPushAndProgrammaticPopKeepPathAndMetadataConsistent() {
         var visits: [ScreenDescriptor] = []
         let store = AuthenticatedNavigationStore { visits.append($0) }
@@ -25,6 +27,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(visits.last?.id, "transfer.landing")
     }
 
+    // Memverifikasi system style path reduction trims metadata atomically.
     func testSystemStylePathReductionTrimsMetadataAtomically() {
         let store = AuthenticatedNavigationStore { _ in }
         store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
@@ -39,6 +42,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.topScreen.id, "transfer.landing")
     }
 
+    // Memverifikasi same count system echo cannot replace store owned route.
     func testSameCountSystemEchoCannotReplaceStoreOwnedRoute() {
         let store = AuthenticatedNavigationStore { _ in }
         store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
@@ -52,6 +56,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.topScreen.id, "transfer.landing")
     }
 
+    // Memverifikasi pop to root keeps selected tab as top screen.
     func testPopToRootKeepsSelectedTabAsTopScreen() {
         let store = AuthenticatedNavigationStore { _ in }
         store.selectTab(.financial)
@@ -64,6 +69,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.topScreen, AppTab.financial.screenDescriptor)
     }
 
+    // Memverifikasi canonical navigation selects tab and replaces journey.
     func testCanonicalNavigationSelectsTabAndReplacesJourney() {
         let store = AuthenticatedNavigationStore { _ in }
         store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "transfer.landing"))
@@ -82,6 +88,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.metadata.map(\.id), ["wealth.product"])
     }
 
+    // Memverifikasi unauthenticated system pop reconciles metadata.
     func testUnauthenticatedSystemPopReconcilesMetadata() {
         let store = UnauthenticatedNavigationStore { _ in }
         store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "temporary"))
@@ -91,6 +98,7 @@ final class NavigationStoreTests: XCTestCase {
         XCTAssertEqual(store.topScreen.id, "auth.login")
     }
 
+    // Memverifikasi unauthenticated programmatic pop and root reset stay consistent.
     func testUnauthenticatedProgrammaticPopAndRootResetStayConsistent() {
         let store = UnauthenticatedNavigationStore { _ in }
         store.push(TransferRoute.landing, screen: ScreenDescriptor(id: "first"))

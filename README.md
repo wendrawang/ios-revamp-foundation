@@ -46,6 +46,9 @@ Run dependency checks:
 ./Scripts/check-architecture.sh
 ```
 
+The architecture command also runs strict Apple `swift-format` plus the custom
+file-size, method-size, method-comment, and boolean-prefix rules.
+
 Run the complete local quality gate—every Local SPM test target, app build,
 unit/integration tests, UI tests, performance metrics, and coverage:
 

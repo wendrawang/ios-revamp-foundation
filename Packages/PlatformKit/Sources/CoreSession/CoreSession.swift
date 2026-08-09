@@ -7,6 +7,7 @@ public struct SessionCredentials: Codable, Equatable, Sendable {
     public let refreshToken: String
     public let userID: String
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(accessToken: String, refreshToken: String, userID: String) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
@@ -27,6 +28,7 @@ public actor SessionCredentialManager {
     private var credentials: SessionCredentials?
     private(set) public var invalidationReason: SessionInvalidationReason?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         vault: any SecureCredentialStoring,
         logger: any AppLogging,
@@ -37,6 +39,7 @@ public actor SessionCredentialManager {
         self.storageKey = storageKey
     }
 
+    // Menyimpan credential session baru melalui secure vault.
     public func establish(_ credentials: SessionCredentials) async throws {
         let data = try JSONEncoder().encode(credentials)
         try await vault.write(data, key: storageKey)
@@ -45,6 +48,7 @@ public actor SessionCredentialManager {
         logger.log(LogEntry(level: .notice, category: "session", message: "Session established"))
     }
 
+    // Membaca credential session aktif dari secure vault.
     public func current() async throws -> SessionCredentials? {
         if let credentials { return credentials }
         guard let data = try await vault.read(key: storageKey) else { return nil }
@@ -53,16 +57,17 @@ public actor SessionCredentialManager {
         return decoded
     }
 
+    // Membatalkan pekerjaan dan membersihkan seluruh state milik session.
     public func invalidate(reason: SessionInvalidationReason) async throws {
         credentials = nil
         invalidationReason = reason
         try await vault.remove(key: storageKey)
-        logger.log(LogEntry(
-            level: .notice,
-            category: "session",
-            message: "Session invalidated",
-            fields: [LogField(name: "reason", value: String(describing: reason), privacy: .public)]
-        ))
+        logger.log(
+            LogEntry(
+                level: .notice,
+                category: "session",
+                message: "Session invalidated",
+                fields: [LogField(name: "reason", value: String(describing: reason), privacy: .public)]
+            ))
     }
 }
-

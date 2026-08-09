@@ -19,6 +19,7 @@ final class AppCoordinator: ObservableObject {
 
     private var pipelineTask: Task<Void, Never>?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(container: AppContainer) {
         self.container = container
         let screenVisits = ScreenVisitCoordinator(analytics: container.analytics)
@@ -36,6 +37,7 @@ final class AppCoordinator: ObservableObject {
         )
     }
 
+    // Memulai resource atau flow yang dimiliki tipe ini.
     func start(arguments: [String] = ProcessInfo.processInfo.arguments) {
         pipelineTask?.cancel()
         pipelineTask = Task { [weak self] in
@@ -43,15 +45,17 @@ final class AppCoordinator: ObservableObject {
             guard let self, !Task.isCancelled else { return }
             phase = .unauthenticated
             if let index = arguments.firstIndex(of: "-deepLink"), arguments.indices.contains(index + 1),
-               let url = URL(string: arguments[index + 1]) {
+                let url = URL(string: arguments[index + 1])
+            {
                 handleDeepLink(url, source: .launchArgument)
             }
         }
     }
 
+    // Memetakan hasil Authentication menjadi transisi app dan session.
     func handleAuthenticationOutput(_ output: AuthenticationOutput) {
         switch output {
-        case let .authenticated(credentials):
+        case .authenticated(let credentials):
             pipelineTask?.cancel()
             pipelineTask = Task { [weak self] in
                 await self?.establishSession(credentials)
@@ -59,6 +63,7 @@ final class AppCoordinator: ObservableObject {
         }
     }
 
+    // Menormalisasi URL ke satu pipeline deep-link aplikasi.
     func handleDeepLink(_ url: URL, source: DeepLinkSource) {
         let request = DeepLinkRequest(url: url, source: source)
         guard let resolution = deepLinks.resolve(request) else { return }
@@ -86,10 +91,12 @@ final class AppCoordinator: ObservableObject {
         }
     }
 
+    // Memeriksa URL melalui registry global tanpa menavigasi.
     func recognizesDeepLink(_ url: URL) -> Bool {
         deepLinks.recognizes(url)
     }
 
+    // Melepas UI scope dan SessionScope secara berurutan lalu kembali ke login.
     func logout() {
         pipelineTask?.cancel()
         pipelineTask = Task { [weak self] in
@@ -106,6 +113,7 @@ final class AppCoordinator: ObservableObject {
         }
     }
 
+    // Membuat dependency session dan authenticated UI setelah login berhasil.
     private func establishSession(_ credentials: SessionCredentials) async {
         do {
             try await container.credentialManager.establish(credentials)
@@ -126,22 +134,24 @@ final class AppCoordinator: ObservableObject {
                 phase = .authenticated
             }
         } catch {
-            container.presentationController.present(GlobalPresentation(
-                id: "session-establishment-failed",
-                title: "Unable to create session",
-                message: "Please try signing in again.",
-                primaryButtonTitle: "Close"
-            ))
+            container.presentationController.present(
+                GlobalPresentation(
+                    id: "session-establishment-failed",
+                    title: "Unable to create session",
+                    message: "Please try signing in again.",
+                    primaryButtonTitle: "Close"
+                ))
             phase = .unauthenticated
         }
     }
 
+    // Menjalankan optional preflight sebelum menerapkan navigation decision.
     private func executeAuthenticatedResolution(_ resolution: ResolvedDeepLink) {
         pipelineTask?.cancel()
         pipelineTask = Task { [weak self] in
             guard let self else { return }
             phase = .authenticated
-            if resolution.requiresPreflight {
+            if resolution.isPreflightRequired {
                 authenticatedState = .preparing
                 let signpostID = AppPerformanceSignposts.beginAuthenticatedPreflight(
                     identifier: resolution.identifier
@@ -156,12 +166,13 @@ final class AppCoordinator: ObservableObject {
                     try await resolution.preflight?()
                     guard !Task.isCancelled else { return }
                 } catch {
-                    container.presentationController.present(GlobalPresentation(
-                        id: "preflight-failed",
-                        title: "Unable to prepare destination",
-                        message: "Please try again later.",
-                        primaryButtonTitle: "Close"
-                    ))
+                    container.presentationController.present(
+                        GlobalPresentation(
+                            id: "preflight-failed",
+                            title: "Unable to prepare destination",
+                            message: "Please try again later.",
+                            primaryButtonTitle: "Close"
+                        ))
                     authenticatedNavigation.openCanonical(
                         tab: .dashboard,
                         destination: Optional<NavigationDestination<TransferRoute>>.none

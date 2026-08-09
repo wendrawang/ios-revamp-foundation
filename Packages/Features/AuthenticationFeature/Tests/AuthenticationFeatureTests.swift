@@ -12,9 +12,10 @@ private enum StubAuthenticationMode: Sendable {
 private struct StubAuthenticator: Authenticating {
     let mode: StubAuthenticationMode
 
+    // Memvalidasi credential dan mengembalikan authenticated session value.
     func authenticate(password: String) async throws -> SessionCredentials {
         switch mode {
-        case let .success(credentials):
+        case .success(let credentials):
             return credentials
         case .failure:
             throw AuthenticationError.invalidCredentials
@@ -27,9 +28,11 @@ private struct StubAuthenticator: Authenticating {
 
 private final class WeakReference<Object: AnyObject> {
     weak var value: Object?
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(_ value: Object?) { self.value = value }
 }
 
+// Menunggu perubahan async dengan timeout agar test tidak menggantung.
 @MainActor
 private func waitUntil(_ condition: () -> Bool) async throws {
     for _ in 0..<100 {
@@ -39,16 +42,19 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     Issue.record("Timed out waiting for view-model state")
 }
 
+// Memverifikasi registration continuation deep link parses.
 @Test func registrationContinuationDeepLinkParses() {
     let url = URL(string: "iosrevamp://registration/continue?token=demo")!
     #expect(AuthenticationDeepLinkParser().parse(url) == .registrationContinuation(token: "demo"))
 }
 
+// Memverifikasi unrelated deep link does not parse as authentication.
 @Test func unrelatedDeepLinkDoesNotParseAsAuthentication() {
     let url = URL(string: "iosrevamp://rewards")!
     #expect(AuthenticationDeepLinkParser().parse(url) == nil)
 }
 
+// Memverifikasi fake authentication rejects empty password.
 @Test func fakeAuthenticationRejectsEmptyPassword() async {
     do {
         _ = try await FakeAuthenticationService().authenticate(password: "")
@@ -60,6 +66,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     }
 }
 
+// Memverifikasi login view model publishes successful output.
 @MainActor
 @Test func loginViewModelPublishesSuccessfulOutput() async throws {
     let credentials = SessionCredentials(accessToken: "a", refreshToken: "r", userID: "u")
@@ -77,6 +84,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     #expect(viewModel.errorMessage == nil)
 }
 
+// Memverifikasi login view model maps failure to safe message.
 @MainActor
 @Test func loginViewModelMapsFailureToSafeMessage() async throws {
     let viewModel = LoginViewModel(
@@ -91,6 +99,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     #expect(!viewModel.isLoading)
 }
 
+// Memverifikasi login cancellation stops work and view model releases.
 @MainActor
 @Test func loginCancellationStopsWorkAndViewModelReleases() async throws {
     let weakViewModel = WeakReference<LoginViewModel>(nil)

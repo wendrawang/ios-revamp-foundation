@@ -26,7 +26,7 @@ struct UnauthenticatedNavigationHost: View {
                     LoginScreen(authenticator: FakeAuthenticationService()) {
                         coordinator.handleAuthenticationOutput($0)
                     }
-                case let .registrationContinuation(token):
+                case .registrationContinuation(let token):
                     RegistrationContinuationScreen(token: token)
                 }
             }
@@ -68,14 +68,14 @@ struct AuthenticatedNavigationHost: View {
             .navigationDestination(for: WealthRoute.self) { route in
                 if let session = coordinator.sessionScope {
                     switch route {
-                    case let .product(id):
+                    case .product(let id):
                         WealthProductScreen(productID: id, service: session.wealthService)
                     }
                 }
             }
             .navigationDestination(for: RewardsRoute.self) { route in
                 switch route {
-                case let .detail(id): RewardDetailScreen(rewardID: id)
+                case .detail(let id): RewardDetailScreen(rewardID: id)
                 }
             }
             .navigationDestination(for: UpgradeServiceRoute.self) { _ in
@@ -87,6 +87,7 @@ struct AuthenticatedNavigationHost: View {
         }
     }
 
+    // Mengubah route internal Transfer menjadi privacy-safe analytics identifier.
     private func screenID(for route: TransferRoute) -> String {
         switch route {
         case .landing: "transfer.landing"
@@ -112,7 +113,7 @@ struct MainTabContainer: View {
             FinancialHubRootView(
                 isWealthEnabled: coordinator.container.featureFlags.isEnabled(.wealthEntryEnabled)
             ) { composition.handle($0) }
-                .tag(AppTab.financial)
+            .tag(AppTab.financial)
 
             ScanRootView(
                 viewModel: scope.scanViewModel,
@@ -146,11 +147,21 @@ struct MainTabContainer: View {
 
     private var tabItems: [DSTabItem<AppTab>] {
         [
-            DSTabItem(id: .dashboard, title: "Home", systemImage: "house", accessibilityIdentifier: AppAccessibilityID.tabDashboard),
-            DSTabItem(id: .financial, title: "Financial", systemImage: "chart.pie", accessibilityIdentifier: AppAccessibilityID.tabFinancial),
-            DSTabItem(id: .scan, title: "Scan", systemImage: "qrcode.viewfinder", accessibilityIdentifier: AppAccessibilityID.tabScan, isElevated: true),
-            DSTabItem(id: .rewards, title: "Rewards", systemImage: "gift", accessibilityIdentifier: AppAccessibilityID.tabRewards),
-            DSTabItem(id: .more, title: "More", systemImage: "circle.grid.2x2", accessibilityIdentifier: AppAccessibilityID.tabMore),
+            DSTabItem(
+                id: .dashboard, title: "Home", systemImage: "house",
+                accessibilityIdentifier: AppAccessibilityID.tabDashboard),
+            DSTabItem(
+                id: .financial, title: "Financial", systemImage: "chart.pie",
+                accessibilityIdentifier: AppAccessibilityID.tabFinancial),
+            DSTabItem(
+                id: .scan, title: "Scan", systemImage: "qrcode.viewfinder",
+                accessibilityIdentifier: AppAccessibilityID.tabScan, isElevated: true),
+            DSTabItem(
+                id: .rewards, title: "Rewards", systemImage: "gift",
+                accessibilityIdentifier: AppAccessibilityID.tabRewards),
+            DSTabItem(
+                id: .more, title: "More", systemImage: "circle.grid.2x2",
+                accessibilityIdentifier: AppAccessibilityID.tabMore),
         ]
     }
 }

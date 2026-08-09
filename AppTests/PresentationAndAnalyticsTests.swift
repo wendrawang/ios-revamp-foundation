@@ -1,24 +1,28 @@
-@testable import IOSRevampFoundation
 import CoreAnalytics
 import TransferFeature
 import XCTest
 
+@testable import IOSRevampFoundation
+
 @MainActor
 final class PresentationAndAnalyticsTests: XCTestCase {
+    // Memverifikasi global presentation dismissal releases presented value.
     func testGlobalPresentationDismissalReleasesPresentedValue() {
         let controller = GlobalPresentationController()
-        controller.present(GlobalPresentation(
-            id: "sample",
-            title: "Title",
-            message: "Message",
-            primaryButtonTitle: "Close"
-        ))
+        controller.present(
+            GlobalPresentation(
+                id: "sample",
+                title: "Title",
+                message: "Message",
+                primaryButtonTitle: "Close"
+            ))
 
         controller.dismiss()
 
         XCTAssertNil(controller.current)
     }
 
+    // Memverifikasi global presentations are queued in order.
     func testGlobalPresentationsAreQueuedInOrder() {
         let controller = GlobalPresentationController()
         let first = GlobalPresentation(id: "first", title: "First", message: "One", primaryButtonTitle: "Next")
@@ -34,6 +38,7 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         XCTAssertNil(controller.current)
     }
 
+    // Memverifikasi blocker priority is deterministic and navigation is untouched.
     func testBlockerPriorityIsDeterministicAndNavigationIsUntouched() {
         let blockers = GlobalBlockerController()
         let navigation = AuthenticatedNavigationStore { _ in }
@@ -53,6 +58,7 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         XCTAssertEqual(navigation.topScreen.id, "transfer.landing")
     }
 
+    // Memverifikasi screen visits come from committed navigation and tab state.
     func testScreenVisitsComeFromCommittedNavigationAndTabState() {
         let analytics = InMemoryAnalytics()
         let visits = ScreenVisitCoordinator(analytics: analytics)
@@ -67,29 +73,35 @@ final class PresentationAndAnalyticsTests: XCTestCase {
         XCTAssertEqual(analytics.events().filter { $0.name == "screen_visit" }.count, 3)
     }
 
+    // Memverifikasi tab activity requires selection foreground and no blocker.
     func testTabActivityRequiresSelectionForegroundAndNoBlocker() {
-        XCTAssertTrue(TabActivityState(
-            selectedTab: .scan,
-            lifecycle: .foreground,
-            isGloballyBlocked: false
-        ).isOperational(.scan))
-        XCTAssertFalse(TabActivityState(
-            selectedTab: .dashboard,
-            lifecycle: .foreground,
-            isGloballyBlocked: false
-        ).isOperational(.scan))
-        XCTAssertFalse(TabActivityState(
-            selectedTab: .scan,
-            lifecycle: .background,
-            isGloballyBlocked: false
-        ).isOperational(.scan))
-        XCTAssertFalse(TabActivityState(
-            selectedTab: .scan,
-            lifecycle: .foreground,
-            isGloballyBlocked: true
-        ).isOperational(.scan))
+        XCTAssertTrue(
+            TabActivityState(
+                selectedTab: .scan,
+                lifecycle: .foreground,
+                isGloballyBlocked: false
+            ).isOperational(.scan))
+        XCTAssertFalse(
+            TabActivityState(
+                selectedTab: .dashboard,
+                lifecycle: .foreground,
+                isGloballyBlocked: false
+            ).isOperational(.scan))
+        XCTAssertFalse(
+            TabActivityState(
+                selectedTab: .scan,
+                lifecycle: .background,
+                isGloballyBlocked: false
+            ).isOperational(.scan))
+        XCTAssertFalse(
+            TabActivityState(
+                selectedTab: .scan,
+                lifecycle: .foreground,
+                isGloballyBlocked: true
+            ).isOperational(.scan))
     }
 
+    // Memverifikasi lifecycle analytics only tracks committed transitions.
     func testLifecycleAnalyticsOnlyTracksCommittedTransitions() {
         let analytics = InMemoryAnalytics()
         let lifecycle = AppLifecycleController(analytics: analytics)

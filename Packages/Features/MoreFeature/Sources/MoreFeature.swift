@@ -17,6 +17,7 @@ public struct MoreRootView: View {
     private let isWebEnabled: Bool
     private let output: (MoreOutput) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(isWebEnabled: Bool, output: @escaping (MoreOutput) -> Void) {
         self.isWebEnabled = isWebEnabled
         self.output = output

@@ -16,8 +16,8 @@ struct TabActivityState: Equatable, Sendable {
     let lifecycle: AppLifecycleState
     let isGloballyBlocked: Bool
 
+    // Menentukan apakah tab boleh menjalankan resource mahal saat ini.
     func isOperational(_ tab: AppTab) -> Bool {
         selectedTab == tab && lifecycle == .foreground && !isGloballyBlocked
     }
 }
-

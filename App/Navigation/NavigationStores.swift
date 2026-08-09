@@ -8,6 +8,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
     private let onTopScreenChanged: (ScreenDescriptor) -> Void
     private let rootScreen = ScreenDescriptor(id: "auth.login")
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(onTopScreenChanged: @escaping (ScreenDescriptor) -> Void) {
         self.onTopScreenChanged = onTopScreenChanged
     }
@@ -22,6 +23,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
         )
     }
 
+    // Menambahkan route konkret dan metadata melalui satu mutation boundary.
     func push<Route: Hashable>(_ route: Route, screen: ScreenDescriptor) {
         var updated = path
         updated.append(route)
@@ -30,6 +32,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(screen)
     }
 
+    // Menghapus route teratas sekaligus menyinkronkan metadata.
     func pop() {
         guard !metadata.isEmpty else { return }
         var updated = path
@@ -39,6 +42,7 @@ final class UnauthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(topScreen)
     }
 
+    // Mengosongkan service journey sambil mempertahankan root flow yang benar.
     func popToRoot() {
         guard !metadata.isEmpty else { return }
         path = NavigationPath()
@@ -46,11 +50,13 @@ final class UnauthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(rootScreen)
     }
 
+    // Mereset navigation saat pergantian session tanpa analytics visit palsu.
     func resetWithoutTracking() {
         path = NavigationPath()
         metadata.removeAll()
     }
 
+    // Menyinkronkan metadata ketika SwiftUI melakukan native back navigation.
     func reconcileSystemPath(_ systemPath: NavigationPath) {
         if systemPath.count == path.count { return }
         guard systemPath.count < path.count else {
@@ -72,6 +78,7 @@ final class AuthenticatedNavigationStore: ObservableObject {
     @Published private(set) var selectedTab: AppTab = .dashboard
     private let onTopScreenChanged: (ScreenDescriptor) -> Void
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(onTopScreenChanged: @escaping (ScreenDescriptor) -> Void) {
         self.onTopScreenChanged = onTopScreenChanged
     }
@@ -93,6 +100,7 @@ final class AuthenticatedNavigationStore: ObservableObject {
         )
     }
 
+    // Menambahkan route konkret dan metadata melalui satu mutation boundary.
     func push<Route: Hashable>(_ route: Route, screen: ScreenDescriptor) {
         var updated = path
         updated.append(route)
@@ -101,15 +109,17 @@ final class AuthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(screen)
     }
 
+    // Menerapkan typed navigation decision ke runtime NavigationPath.
     func apply<Route: Hashable>(_ decision: AuthenticatedNavigationDecision<Route>) {
         switch decision {
-        case let .push(destination):
+        case .push(let destination):
             push(destination.route, screen: destination.screen)
-        case let .canonical(tab, destination):
+        case .canonical(let tab, let destination):
             openCanonical(tab: tab, destination: destination)
         }
     }
 
+    // Menghapus route teratas sekaligus menyinkronkan metadata.
     func pop() {
         guard !metadata.isEmpty else { return }
         var updated = path
@@ -119,6 +129,7 @@ final class AuthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(topScreen)
     }
 
+    // Mengosongkan service journey sambil mempertahankan root flow yang benar.
     func popToRoot() {
         guard !metadata.isEmpty else { return }
         path = NavigationPath()
@@ -126,6 +137,7 @@ final class AuthenticatedNavigationStore: ObservableObject {
         onTopScreenChanged(selectedTab.screenDescriptor)
     }
 
+    // Mengganti tab aktif dan menerbitkan screen visit yang deterministic.
     func selectTab(_ tab: AppTab) {
         guard tab != selectedTab else { return }
         selectedTab = tab
@@ -134,6 +146,7 @@ final class AuthenticatedNavigationStore: ObservableObject {
         }
     }
 
+    // Memilih tab canonical, mereset journey, lalu membuka destination opsional.
     func openCanonical<Route: Hashable>(
         tab: AppTab,
         destination: NavigationDestination<Route>?
@@ -152,12 +165,14 @@ final class AuthenticatedNavigationStore: ObservableObject {
         }
     }
 
+    // Mereset navigation saat pergantian session tanpa analytics visit palsu.
     func resetWithoutTracking() {
         path = NavigationPath()
         metadata.removeAll()
         selectedTab = .dashboard
     }
 
+    // Menyinkronkan metadata ketika SwiftUI melakukan native back navigation.
     func reconcileSystemPath(_ systemPath: NavigationPath) {
         if systemPath.count == path.count { return }
         guard systemPath.count < path.count else {

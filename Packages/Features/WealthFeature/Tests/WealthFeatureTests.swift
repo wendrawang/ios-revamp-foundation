@@ -10,9 +10,10 @@ private enum StubWealthMode: Sendable {
 private struct StubWealthService: WealthServicing {
     let mode: StubWealthMode
 
+    // Mengambil data produk Wealth melalui service domain.
     func product(id: String) async throws -> WealthProduct {
         switch mode {
-        case let .success(product): return product
+        case .success(let product): return product
         case .suspended:
             try await Task.sleep(nanoseconds: 2_000_000_000)
             throw CancellationError()
@@ -22,9 +23,11 @@ private struct StubWealthService: WealthServicing {
 
 private final class WeakReference<Object: AnyObject> {
     weak var value: Object?
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(_ value: Object?) { self.value = value }
 }
 
+// Menunggu perubahan async dengan timeout agar test tidak menggantung.
 @MainActor
 private func waitUntil(_ condition: () -> Bool) async throws {
     for _ in 0..<100 {
@@ -34,21 +37,25 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     Issue.record("Timed out waiting for wealth state")
 }
 
+// Memverifikasi wealth product route preserves identifier.
 @Test func wealthProductRoutePreservesIdentifier() {
     #expect(WealthRoute.product(id: "wealth-001") == .product(id: "wealth-001"))
 }
 
+// Memverifikasi wealth deep link parses.
 @Test func wealthDeepLinkParses() {
     let url = URL(string: "iosrevamp://wealth/product?id=wealth-001")!
     #expect(WealthDeepLinkParser().parse(url) == .product(id: "wealth-001"))
 }
 
+// Memverifikasi malformed wealth deep links are rejected.
 @Test func malformedWealthDeepLinksAreRejected() {
     let parser = WealthDeepLinkParser()
     #expect(parser.parse(URL(string: "iosrevamp://wealth/product")!) == nil)
     #expect(parser.parse(URL(string: "iosrevamp://rewards/detail?id=wealth-001")!) == nil)
 }
 
+// Memverifikasi wealth view model loads product once.
 @MainActor
 @Test func wealthViewModelLoadsProductOnce() async throws {
     let product = WealthProduct(id: "wealth-001", name: "Growth")
@@ -66,6 +73,7 @@ private func waitUntil(_ condition: () -> Bool) async throws {
     #expect(viewModel.product == product)
 }
 
+// Memverifikasi wealth view model cancels and releases.
 @MainActor
 @Test func wealthViewModelCancelsAndReleases() async throws {
     let weakViewModel = WeakReference<WealthProductViewModel>(nil)

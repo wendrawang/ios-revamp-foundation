@@ -19,15 +19,18 @@ public enum AuthenticationDeepLinkIntent: Equatable, Sendable {
 }
 
 public struct AuthenticationDeepLinkParser: Sendable {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Mengubah URL yang cocok menjadi intent domain bertipe.
     public func parse(_ url: URL) -> AuthenticationDeepLinkIntent? {
         guard url.scheme?.lowercased() == "iosrevamp",
-              url.host?.lowercased() == "registration",
-              url.path == "/continue",
-              let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            url.host?.lowercased() == "registration",
+            url.path == "/continue",
+            let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "token" })?.value,
-              !token.isEmpty else {
+            !token.isEmpty
+        else {
             return nil
         }
         return .registrationContinuation(token: token)
@@ -39,6 +42,7 @@ public enum AuthenticationOutput: Equatable, Sendable {
 }
 
 public protocol Authenticating: Sendable {
+    // Memvalidasi credential dan mengembalikan authenticated session value.
     func authenticate(password: String) async throws -> SessionCredentials
 }
 
@@ -48,8 +52,10 @@ public enum AuthenticationError: Error, Equatable, Sendable {
 }
 
 public struct FakeAuthenticationService: Authenticating {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Memvalidasi credential dan mengembalikan authenticated session value.
     public func authenticate(password: String) async throws -> SessionCredentials {
         guard !password.isEmpty else { throw AuthenticationError.emptyPassword }
         try await Task.sleep(nanoseconds: 80_000_000)
@@ -68,6 +74,7 @@ public final class LoginViewModel: ObservableObject {
     private let output: @MainActor (AuthenticationOutput) -> Void
     private var task: Task<Void, Never>?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         authenticator: any Authenticating,
         output: @escaping @MainActor (AuthenticationOutput) -> Void
@@ -76,6 +83,7 @@ public final class LoginViewModel: ObservableObject {
         self.output = output
     }
 
+    // Memulai operasi async milik ViewModel dan menerbitkan state UI.
     public func submit() {
         task?.cancel()
         isLoading = true
@@ -96,12 +104,14 @@ public final class LoginViewModel: ObservableObject {
         }
     }
 
+    // Membatalkan Task agar tidak melewati lifetime layar.
     public func cancel() {
         task?.cancel()
         task = nil
         isLoading = false
     }
 
+    // Menghentikan resource yang masih dimiliki saat instance dilepas.
     deinit {
         task?.cancel()
     }
@@ -110,6 +120,7 @@ public final class LoginViewModel: ObservableObject {
 public struct LoginScreen: View {
     @StateObject private var viewModel: LoginViewModel
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(
         authenticator: any Authenticating,
         output: @escaping @MainActor (AuthenticationOutput) -> Void
@@ -128,7 +139,10 @@ public struct LoginScreen: View {
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage).foregroundStyle(.red)
             }
-            DSPrimaryButton(title: viewModel.isLoading ? "Signing in…" : "Log in", accessibilityIdentifier: AuthenticationAccessibilityID.loginSubmit) {
+            DSPrimaryButton(
+                title: viewModel.isLoading ? "Signing in…" : "Log in",
+                accessibilityIdentifier: AuthenticationAccessibilityID.loginSubmit
+            ) {
                 viewModel.submit()
             }
             .disabled(viewModel.isLoading)
@@ -143,15 +157,18 @@ public struct LoginScreen: View {
 public struct RegistrationContinuationScreen: View {
     private let token: String
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(token: String) {
         self.token = token
     }
 
     public var body: some View {
         VStack(spacing: DSSpacing.lg) {
-            Image(systemName: "person.crop.circle.badge.checkmark").font(.system(size: 52)).foregroundStyle(DSColor.accent)
+            Image(systemName: "person.crop.circle.badge.checkmark").font(.system(size: 52)).foregroundStyle(
+                DSColor.accent)
             Text("Continue registration").font(.title2.bold())
-            Text("Your secure registration invitation was recognized.").multilineTextAlignment(.center).foregroundStyle(.secondary)
+            Text("Your secure registration invitation was recognized.").multilineTextAlignment(.center).foregroundStyle(
+                .secondary)
             Text("Reference: \(token.prefix(4))•••").font(.caption).foregroundStyle(.secondary)
         }
         .padding(DSSpacing.lg)

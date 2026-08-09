@@ -28,7 +28,7 @@ struct DeepLinkRequest: Equatable, Sendable {
 struct ResolvedDeepLink {
     let identifier: String
     let authentication: AuthenticationRequirement
-    let requiresPreflight: Bool
+    let isPreflightRequired: Bool
     let preflight: (@Sendable () async throws -> Void)?
     let applyUnauthenticated: ((UnauthenticatedNavigationStore) -> Void)?
     let applyAuthenticated: ((AuthenticatedNavigationStore) -> Void)?
@@ -44,10 +44,12 @@ struct DeepLinkRegistration {
 final class DeepLinkRegistry {
     private let registrations: [DeepLinkRegistration]
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(registrations: [DeepLinkRegistration]) {
         self.registrations = registrations
     }
 
+    // Mencari resolver domain yang mengenali URL atau request ini.
     func resolve(_ url: URL) -> ResolvedDeepLink? {
         for registration in registrations {
             if let resolution = registration.resolve(url) { return resolution }
@@ -55,6 +57,7 @@ final class DeepLinkRegistry {
         return nil
     }
 
+    // Memeriksa apakah URL dikenali sebagai application deep link.
     func recognizes(_ url: URL) -> Bool {
         resolve(url) != nil
     }
@@ -64,15 +67,18 @@ final class DeepLinkRegistry {
 final class PendingDeepLinkStore {
     private(set) var request: DeepLinkRequest?
 
+    // Menyimpan pending deep link sampai authentication selesai.
     func save(_ request: DeepLinkRequest) {
         self.request = request
     }
 
+    // Mengambil sekaligus menghapus pending deep link yang tersimpan.
     func take() -> DeepLinkRequest? {
         defer { request = nil }
         return request
     }
 
+    // Menghapus pending state agar tidak bocor ke session berikutnya.
     func clear() {
         request = nil
     }
@@ -83,27 +89,33 @@ final class DeepLinkOrchestrator {
     private let registry: DeepLinkRegistry
     private let pendingStore: PendingDeepLinkStore
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(registry: DeepLinkRegistry, pendingStore: PendingDeepLinkStore) {
         self.registry = registry
         self.pendingStore = pendingStore
     }
 
+    // Memeriksa apakah URL dikenali sebagai application deep link.
     func recognizes(_ url: URL) -> Bool {
         registry.recognizes(url)
     }
 
+    // Mencari resolver domain yang mengenali URL atau request ini.
     func resolve(_ request: DeepLinkRequest) -> ResolvedDeepLink? {
         registry.resolve(request.url)
     }
 
+    // Meneruskan request ke penyimpanan pending authenticated deep link.
     func savePending(_ request: DeepLinkRequest) {
         pendingStore.save(request)
     }
 
+    // Mengambil pending request untuk dilanjutkan setelah login.
     func takePending() -> DeepLinkRequest? {
         pendingStore.take()
     }
 
+    // Membersihkan pending request saat flow dibatalkan atau logout.
     func clearPending() {
         pendingStore.clear()
     }
@@ -111,86 +123,109 @@ final class DeepLinkOrchestrator {
 
 @MainActor
 enum DeepLinkRegistryFactory {
+    // Merakit registry global dari resolver yang tetap dimiliki masing-masing domain.
     static func make(featureFlags: any FeatureFlagProviding) -> DeepLinkRegistry {
-        let authenticationParser = AuthenticationDeepLinkParser()
-        let rewardsParser = RewardsDeepLinkParser()
-        let wealthParser = WealthDeepLinkParser()
-
         return DeepLinkRegistry(registrations: [
-            DeepLinkRegistration(identifier: "authentication") { url in
-                guard case let .registrationContinuation(token)? = authenticationParser.parse(url) else { return nil }
-                return ResolvedDeepLink(
-                    identifier: "registration.continuation",
-                    authentication: .unauthenticated,
-                    requiresPreflight: false,
-                    preflight: nil,
-                    applyUnauthenticated: { store in
-                        store.popToRoot()
-                        store.push(
-                            AuthenticationRoute.registrationContinuation(token: token),
-                            screen: ScreenDescriptor(id: "auth.registration.continuation")
-                        )
-                    },
-                    applyAuthenticated: nil
-                )
-            },
-            DeepLinkRegistration(identifier: "rewards") { url in
-                guard let intent = rewardsParser.parse(url) else { return nil }
-                switch intent {
-                case .root:
-                    return ResolvedDeepLink(
-                        identifier: "rewards.root",
-                        authentication: .authenticated,
-                        requiresPreflight: false,
-                        preflight: nil,
-                        applyUnauthenticated: nil,
-                        applyAuthenticated: { store in
-                            store.openCanonical(
-                                tab: .rewards,
-                                destination: Optional<NavigationDestination<RewardsRoute>>.none
-                            )
-                        }
+            authenticationRegistration(),
+            rewardsRegistration(),
+            wealthRegistration(featureFlags: featureFlags),
+        ])
+    }
+
+    // Mendaftarkan parser dan navigation decision milik Authentication.
+    private static func authenticationRegistration() -> DeepLinkRegistration {
+        let parser = AuthenticationDeepLinkParser()
+        return DeepLinkRegistration(identifier: "authentication") { url in
+            guard case .registrationContinuation(let token)? = parser.parse(url) else { return nil }
+            return ResolvedDeepLink(
+                identifier: "registration.continuation",
+                authentication: .unauthenticated,
+                isPreflightRequired: false,
+                preflight: nil,
+                applyUnauthenticated: { store in
+                    store.popToRoot()
+                    store.push(
+                        AuthenticationRoute.registrationContinuation(token: token),
+                        screen: ScreenDescriptor(id: "auth.registration.continuation")
                     )
-                case let .detail(id):
-                    return ResolvedDeepLink(
-                        identifier: "rewards.detail",
-                        authentication: .authenticated,
-                        requiresPreflight: false,
-                        preflight: nil,
-                        applyUnauthenticated: nil,
-                        applyAuthenticated: { store in
-                            store.openCanonical(
-                                tab: .rewards,
-                                destination: NavigationDestination(
-                                    route: RewardsRoute.detail(id: id),
-                                    screen: ScreenDescriptor(id: "rewards.detail")
-                                )
-                            )
-                        }
-                    )
-                }
-            },
-            DeepLinkRegistration(identifier: "wealth") { url in
-                guard featureFlags.isEnabled(.wealthEntryEnabled),
-                      case let .product(id)? = wealthParser.parse(url) else { return nil }
-                let preflight = DummyWealthPreflightUseCase(delayNanoseconds: 250_000_000)
+                },
+                applyAuthenticated: nil
+            )
+        }
+    }
+
+    // Mendaftarkan root dan detail deep link milik Rewards.
+    private static func rewardsRegistration() -> DeepLinkRegistration {
+        let parser = RewardsDeepLinkParser()
+        return DeepLinkRegistration(identifier: "rewards") { url in
+            guard let intent = parser.parse(url) else { return nil }
+            switch intent {
+            case .root:
                 return ResolvedDeepLink(
-                    identifier: "wealth.product",
+                    identifier: "rewards.root",
                     authentication: .authenticated,
-                    requiresPreflight: true,
-                    preflight: { try await preflight.prepare(productID: id) },
+                    isPreflightRequired: false,
+                    preflight: nil,
                     applyUnauthenticated: nil,
                     applyAuthenticated: { store in
                         store.openCanonical(
-                            tab: .financial,
-                            destination: NavigationDestination(
-                                route: WealthRoute.product(id: id),
-                                screen: ScreenDescriptor(id: "wealth.product")
-                            )
+                            tab: .rewards,
+                            destination: Optional<NavigationDestination<RewardsRoute>>.none
                         )
                     }
                 )
-            },
-        ])
+            case .detail(let id):
+                return rewardDetailResolution(id: id)
+            }
+        }
+    }
+
+    // Membuat typed Rewards detail decision tanpa mengekspos payload ke router global.
+    private static func rewardDetailResolution(id: String) -> ResolvedDeepLink {
+        ResolvedDeepLink(
+            identifier: "rewards.detail",
+            authentication: .authenticated,
+            isPreflightRequired: false,
+            preflight: nil,
+            applyUnauthenticated: nil,
+            applyAuthenticated: { store in
+                store.openCanonical(
+                    tab: .rewards,
+                    destination: NavigationDestination(
+                        route: RewardsRoute.detail(id: id),
+                        screen: ScreenDescriptor(id: "rewards.detail")
+                    )
+                )
+            }
+        )
+    }
+
+    // Mendaftarkan Wealth deep link dan dedicated authenticated preflight.
+    private static func wealthRegistration(
+        featureFlags: any FeatureFlagProviding
+    ) -> DeepLinkRegistration {
+        let parser = WealthDeepLinkParser()
+        return DeepLinkRegistration(identifier: "wealth") { url in
+            guard featureFlags.isEnabled(.wealthEntryEnabled),
+                case .product(let id)? = parser.parse(url)
+            else { return nil }
+            let preflight = DummyWealthPreflightUseCase(delayNanoseconds: 250_000_000)
+            return ResolvedDeepLink(
+                identifier: "wealth.product",
+                authentication: .authenticated,
+                isPreflightRequired: true,
+                preflight: { try await preflight.prepare(productID: id) },
+                applyUnauthenticated: nil,
+                applyAuthenticated: { store in
+                    store.openCanonical(
+                        tab: .financial,
+                        destination: NavigationDestination(
+                            route: WealthRoute.product(id: id),
+                            screen: ScreenDescriptor(id: "wealth.product")
+                        )
+                    )
+                }
+            )
+        }
     }
 }

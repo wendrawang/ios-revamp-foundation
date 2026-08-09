@@ -3,9 +3,11 @@ import Testing
 
 private final class WeakReference<Object: AnyObject> {
     weak var value: Object?
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init(_ value: Object?) { self.value = value }
 }
 
+// Memverifikasi scan starts and stops from operational signal.
 @MainActor
 @Test func scanStartsAndStopsFromOperationalSignal() {
     let camera = SampleCameraController()
@@ -20,6 +22,7 @@ private final class WeakReference<Object: AnyObject> {
     #expect(camera.stopCount == 1)
 }
 
+// Memverifikasi scan activity updates are idempotent.
 @MainActor
 @Test func scanActivityUpdatesAreIdempotent() {
     let camera = SampleCameraController()
@@ -34,6 +37,7 @@ private final class WeakReference<Object: AnyObject> {
     #expect(camera.stopCount == 1)
 }
 
+// Memverifikasi scan view model deinit stops camera.
 @MainActor
 @Test func scanViewModelDeinitStopsCamera() {
     let camera = SampleCameraController()

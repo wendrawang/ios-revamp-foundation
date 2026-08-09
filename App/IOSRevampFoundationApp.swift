@@ -5,6 +5,7 @@ struct IOSRevampFoundationApp: App {
     private let container: AppContainer
     private let coordinator: AppCoordinator
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     init() {
         let isUITesting = ProcessInfo.processInfo.arguments.contains("-uiTesting")
         let container = AppContainer(isUITesting: isUITesting)
@@ -18,4 +19,3 @@ struct IOSRevampFoundationApp: App {
         }
     }
 }
-

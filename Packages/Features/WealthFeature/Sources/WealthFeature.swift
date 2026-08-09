@@ -17,15 +17,18 @@ public enum WealthDeepLinkIntent: Equatable, Sendable {
 }
 
 public struct WealthDeepLinkParser: Sendable {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
+    // Mengubah URL yang cocok menjadi intent domain bertipe.
     public func parse(_ url: URL) -> WealthDeepLinkIntent? {
         guard url.scheme?.lowercased() == "iosrevamp",
-              url.host?.lowercased() == "wealth",
-              url.path == "/product",
-              let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            url.host?.lowercased() == "wealth",
+            url.path == "/product",
+            let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "id" })?.value,
-              !id.isEmpty else { return nil }
+            !id.isEmpty
+        else { return nil }
         return .product(id: id)
     }
 }
@@ -34,6 +37,7 @@ public struct WealthProduct: Codable, Equatable, Sendable {
     public let id: String
     public let name: String
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(id: String, name: String) {
         self.id = id
         self.name = name
@@ -41,11 +45,14 @@ public struct WealthProduct: Codable, Equatable, Sendable {
 }
 
 public protocol WealthServicing: Sendable {
+    // Mengambil data produk Wealth melalui service domain.
     func product(id: String) async throws -> WealthProduct
 }
 
 public struct FakeWealthService: WealthServicing {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
+    // Mengambil data produk Wealth melalui service domain.
     public func product(id: String) async throws -> WealthProduct {
         WealthProduct(id: id, name: "Balanced Growth Fund")
     }
@@ -53,7 +60,9 @@ public struct FakeWealthService: WealthServicing {
 
 public struct RemoteWealthService: WealthServicing {
     private let client: any HTTPClient
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(client: any HTTPClient) { self.client = client }
+    // Mengambil data produk Wealth melalui service domain.
     public func product(id: String) async throws -> WealthProduct {
         try await client.send(HTTPRequest(path: "/wealth/products/\(id)")).decode(WealthProduct.self)
     }
@@ -61,21 +70,26 @@ public struct RemoteWealthService: WealthServicing {
 
 public struct LoadWealthProductUseCase: Sendable {
     private let service: any WealthServicing
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(service: any WealthServicing) { self.service = service }
+    // Menjalankan operasi dependency atau use case yang dibungkus tipe ini.
     public func execute(id: String) async throws -> WealthProduct { try await service.product(id: id) }
 }
 
 public protocol WealthPreflighting: Sendable {
+    // Menjalankan inquiry atau preflight sebelum destination ditampilkan.
     func prepare(productID: String) async throws
 }
 
 public struct DummyWealthPreflightUseCase: WealthPreflighting {
     private let delayNanoseconds: UInt64
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(delayNanoseconds: UInt64 = 250_000_000) {
         self.delayNanoseconds = delayNanoseconds
     }
 
+    // Menjalankan inquiry atau preflight sebelum destination ditampilkan.
     public func prepare(productID: String) async throws {
         try await Task.sleep(nanoseconds: delayNanoseconds)
         try Task.checkCancellation()
@@ -90,11 +104,13 @@ public final class WealthProductViewModel: ObservableObject {
     private let useCase: LoadWealthProductUseCase
     private var task: Task<Void, Never>?
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(productID: String, useCase: LoadWealthProductUseCase) {
         self.productID = productID
         self.useCase = useCase
     }
 
+    // Memuat data layar satu kali dan menerbitkan hasilnya ke UI state.
     public func load() {
         guard product == nil, !isLoading else { return }
         isLoading = true
@@ -106,18 +122,26 @@ public final class WealthProductViewModel: ObservableObject {
         }
     }
 
-    public func cancel() { task?.cancel(); task = nil; isLoading = false }
+    // Membatalkan Task agar tidak melewati lifetime layar.
+    public func cancel() {
+        task?.cancel()
+        task = nil
+        isLoading = false
+    }
+    // Menghentikan resource yang masih dimiliki saat instance dilepas.
     deinit { task?.cancel() }
 }
 
 public struct WealthProductScreen: View {
     @StateObject private var viewModel: WealthProductViewModel
 
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init(productID: String, service: any WealthServicing) {
-        _viewModel = StateObject(wrappedValue: WealthProductViewModel(
-            productID: productID,
-            useCase: LoadWealthProductUseCase(service: service)
-        ))
+        _viewModel = StateObject(
+            wrappedValue: WealthProductViewModel(
+                productID: productID,
+                useCase: LoadWealthProductUseCase(service: service)
+            ))
     }
 
     public var body: some View {

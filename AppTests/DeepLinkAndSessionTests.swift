@@ -1,12 +1,14 @@
-@testable import IOSRevampFoundation
 import AuthenticationFeature
 import CoreSession
 import TransferFeature
 import WealthFeature
 import XCTest
 
+@testable import IOSRevampFoundation
+
 @MainActor
 final class DeepLinkAndSessionTests: XCTestCase {
+    // Memverifikasi authenticated deep link is pending then opens directly after login.
     func testAuthenticatedDeepLinkIsPendingThenOpensDirectlyAfterLogin() async throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let url = try XCTUnwrap(URL(string: "iosrevamp://rewards/detail?id=reward-001"))
@@ -22,6 +24,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "rewards.detail")
     }
 
+    // Memverifikasi registration deep link stays unauthenticated.
     func testRegistrationDeepLinkStaysUnauthenticated() throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let url = try XCTUnwrap(URL(string: "iosrevamp://registration/continue?token=demo"))
@@ -33,6 +36,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertEqual(coordinator.unauthenticatedNavigation.topScreen.id, "auth.registration.continuation")
     }
 
+    // Memverifikasi preflight uses authenticated preparing before ready.
     func testPreflightUsesAuthenticatedPreparingBeforeReady() async throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let url = try XCTUnwrap(URL(string: "iosrevamp://wealth/product?id=wealth-001"))
@@ -47,6 +51,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "wealth.product")
     }
 
+    // Memverifikasi logout releases uiscope and session scope.
     func testLogoutReleasesUIScopeAndSessionScope() async throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         coordinator.handleAuthenticationOutput(.authenticated(demoCredentials))
@@ -63,6 +68,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.pathCount, 0)
     }
 
+    // Memverifikasi registry recognizes every supported domain and rejects unknown url.
     func testRegistryRecognizesEverySupportedDomainAndRejectsUnknownURL() throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         let supported = [
@@ -75,11 +81,13 @@ final class DeepLinkAndSessionTests: XCTestCase {
         for value in supported {
             XCTAssertTrue(coordinator.recognizesDeepLink(try XCTUnwrap(URL(string: value))))
         }
-        XCTAssertFalse(coordinator.recognizesDeepLink(
-            try XCTUnwrap(URL(string: "iosrevamp://unknown/path"))
-        ))
+        XCTAssertFalse(
+            coordinator.recognizesDeepLink(
+                try XCTUnwrap(URL(string: "iosrevamp://unknown/path"))
+            ))
     }
 
+    // Memverifikasi authenticated reward root selects rewards without pushed detail.
     func testAuthenticatedRewardRootSelectsRewardsWithoutPushedDetail() async throws {
         let coordinator = AppCoordinator(container: AppContainer(isUITesting: true))
         coordinator.handleAuthenticationOutput(.authenticated(demoCredentials))
@@ -95,6 +103,7 @@ final class DeepLinkAndSessionTests: XCTestCase {
         XCTAssertEqual(coordinator.authenticatedNavigation.topScreen.id, "tab.rewards")
     }
 
+    // Memverifikasi session invalidation cancels owned tasks.
     func testSessionInvalidationCancelsOwnedTasks() async {
         let container = AppContainer(isUITesting: true)
         let session = SessionScope(
@@ -118,13 +127,17 @@ final class DeepLinkAndSessionTests: XCTestCase {
         SessionCredentials(accessToken: "access", refreshToken: "refresh", userID: "user")
     }
 
+    // Menunggu perubahan async dengan timeout agar test tidak menggantung.
     private func waitUntil(
         timeout: TimeInterval = 2,
         condition: @escaping @MainActor () -> Bool
     ) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition() {
-            if Date() > deadline { XCTFail("Timed out waiting for state"); return }
+            if Date() > deadline {
+                XCTFail("Timed out waiting for state")
+                return
+            }
             try await Task.sleep(nanoseconds: 10_000_000)
         }
     }

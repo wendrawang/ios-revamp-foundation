@@ -10,6 +10,7 @@ public enum UpgradeServiceRoute: Hashable, Sendable {
 }
 
 public struct UpgradeServiceScreen: View {
+    // Menyimpan dependency yang diinjeksi dan menyiapkan state milik instance.
     public init() {}
 
     public var body: some View {
