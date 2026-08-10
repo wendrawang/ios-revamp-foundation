@@ -1,0 +1,30 @@
+# Architecture guardrails
+
+- Work only inside this repository.
+- Keep exactly two primary `NavigationStack`s: unauthenticated and authenticated.
+- Do not create a giant global route enum. Domains own value routes.
+- Insert concrete feature routes into `NavigationPath`; never store Views, ViewModels, services, repositories, closures, or sensitive models there.
+- All path mutation goes through the app navigation stores. Reconcile SwiftUI binding reductions with route metadata.
+- Features emit typed outputs for cross-domain navigation and never import unrelated feature implementations.
+- Routers and navigation stores perform no networking or business inquiries.
+- Use constructor injection. Do not add a service locator or production-building default initializer.
+- Business services remain domain-owned. Core modules contain only cross-cutting technical infrastructure.
+- Do not add `Common`, `Utils`, shared-model dumping grounds, or a package per screen.
+- Apply the Rule of 2 before promoting a business value type to a shared module.
+- Avoid routine `AnyView`, unnecessary `UIHostingController`, and heavy work in `View.body`.
+- Backend codes and copy map through whitelisted typed frontend actions; backend values cannot instantiate routes or types.
+- All app-link recognition goes through the app registry. Web host security remains a separate policy.
+- Every Task, timer, observer, camera, and WebKit handler requires an explicit lifetime and cancellation path.
+- Observe `scenePhase` only at app root; propagate normalized lifecycle state.
+- Navigation restoration is non-restorable by default and opt-in only after security review.
+- Keep accessibility identifiers stable and namespaced.
+- Logs and analytics must be structured, privacy-safe, and redacted.
+- Add or update deterministic tests whenever behavior or an architecture boundary changes.
+- Add a concise Indonesian `//` purpose comment to every method and initializer.
+- Keep each Swift file at 250 lines or fewer and each method at 50 lines or fewer.
+- Prefix every boolean flag, state, property, and boolean parameter with `is`.
+- Keep variable, property, parameter, and associated-value names between 3 and 35 characters; `_` is the only discard exception.
+- Keep every business domain in its own Local SPM with an executable test target.
+- Run `Scripts/run-quality-gates.sh` for architecture-sensitive or release-bound changes.
+- Treat coverage as a regression floor; test domain behavior and failure/cancellation paths rather than writing percentage-only tests.
+- Do not claim simulator tests guarantee 60/120 Hz or zero leaks; retain physical-device Instruments acceptance evidence.

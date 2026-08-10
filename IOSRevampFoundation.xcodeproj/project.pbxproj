@@ -1,0 +1,257 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B00000000000000000000001 /* CoreLogging in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000001 /* CoreLogging */; };
+		B00000000000000000000002 /* CoreAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000002 /* CoreAnalytics */; };
+		B00000000000000000000003 /* CoreFeatureFlags in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000003 /* CoreFeatureFlags */; };
+		B00000000000000000000004 /* CoreSecurity in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000004 /* CoreSecurity */; };
+		B00000000000000000000005 /* CoreSession in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000005 /* CoreSession */; };
+		B00000000000000000000006 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000006 /* DesignSystem */; };
+		B00000000000000000000007 /* SecureWebKit in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000007 /* SecureWebKit */; };
+		B00000000000000000000008 /* AuthenticationFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000008 /* AuthenticationFeature */; };
+		B00000000000000000000009 /* DashboardFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000009 /* DashboardFeature */; };
+		B0000000000000000000000A /* FinancialHubFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000A /* FinancialHubFeature */; };
+		B0000000000000000000000B /* TransferFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000B /* TransferFeature */; };
+		B0000000000000000000000C /* WealthFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000C /* WealthFeature */; };
+		B0000000000000000000000D /* ScanFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000D /* ScanFeature */; };
+		B0000000000000000000000E /* RewardsFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000E /* RewardsFeature */; };
+		B0000000000000000000000F /* MoreFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D0000000000000000000000F /* MoreFeature */; };
+		B00000000000000000000010 /* UpgradeServiceFeature in Frameworks */ = {isa = PBXBuildFile; productRef = D00000000000000000000010 /* UpgradeServiceFeature */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A00000000000000000000031 = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001; proxyType = 1; remoteGlobalIDString = A00000000000000000000010; remoteInfo = IOSRevampFoundation; };
+		A00000000000000000000032 = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001; proxyType = 1; remoteGlobalIDString = A00000000000000000000010; remoteInfo = IOSRevampFoundation; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000020 /* IOSRevampFoundation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IOSRevampFoundation.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000021 /* IOSRevampFoundationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSRevampFoundationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000022 /* IOSRevampFoundationUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IOSRevampFoundationUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A00000000000000000000043 /* Exceptions for App folder in IOSRevampFoundation target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A00000000000000000000010 /* IOSRevampFoundation */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A00000000000000000000040 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (A00000000000000000000043);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000041 /* AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = AppTests; sourceTree = "<group>"; };
+		A00000000000000000000042 /* AppUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = AppUITests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000050 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00000000000000000000001,
+				B00000000000000000000002,
+				B00000000000000000000003,
+				B00000000000000000000004,
+				B00000000000000000000005,
+				B00000000000000000000006,
+				B00000000000000000000007,
+				B00000000000000000000008,
+				B00000000000000000000009,
+				B0000000000000000000000A,
+				B0000000000000000000000B,
+				B0000000000000000000000C,
+				B0000000000000000000000D,
+				B0000000000000000000000E,
+				B0000000000000000000000F,
+				B00000000000000000000010,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000051 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000052 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000040 /* App */,
+				A00000000000000000000041 /* AppTests */,
+				A00000000000000000000042 /* AppUITests */,
+				A00000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (A00000000000000000000020, A00000000000000000000021, A00000000000000000000022);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000010 /* IOSRevampFoundation */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000071;
+			buildPhases = (A00000000000000000000060, A00000000000000000000050, A00000000000000000000063);
+			buildRules = ();
+			dependencies = ();
+			fileSystemSynchronizedGroups = (A00000000000000000000040);
+			name = IOSRevampFoundation;
+			packageProductDependencies = (
+				D00000000000000000000001, D00000000000000000000002, D00000000000000000000003,
+				D00000000000000000000004, D00000000000000000000005, D00000000000000000000006,
+				D00000000000000000000007, D00000000000000000000008, D00000000000000000000009,
+				D0000000000000000000000A, D0000000000000000000000B, D0000000000000000000000C,
+				D0000000000000000000000D, D0000000000000000000000E, D0000000000000000000000F,
+				D00000000000000000000010,
+			);
+			productName = IOSRevampFoundation;
+			productReference = A00000000000000000000020;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000011 /* IOSRevampFoundationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000072;
+			buildPhases = (A00000000000000000000061, A00000000000000000000051, A00000000000000000000064);
+			buildRules = ();
+			dependencies = (A00000000000000000000033);
+			fileSystemSynchronizedGroups = (A00000000000000000000041);
+			name = IOSRevampFoundationTests;
+			productName = IOSRevampFoundationTests;
+			productReference = A00000000000000000000021;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A00000000000000000000012 /* IOSRevampFoundationUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000073;
+			buildPhases = (A00000000000000000000062, A00000000000000000000052, A00000000000000000000065);
+			buildRules = ();
+			dependencies = (A00000000000000000000034);
+			fileSystemSynchronizedGroups = (A00000000000000000000042);
+			name = IOSRevampFoundationUITests;
+			productName = IOSRevampFoundationUITests;
+			productReference = A00000000000000000000022;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					A00000000000000000000010 = {CreatedOnToolsVersion = 26.6;};
+					A00000000000000000000011 = {CreatedOnToolsVersion = 26.6; TestTargetID = A00000000000000000000010;};
+					A00000000000000000000012 = {CreatedOnToolsVersion = 26.6; TestTargetID = A00000000000000000000010;};
+				};
+			};
+			buildConfigurationList = A00000000000000000000070;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = A00000000000000000000002;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C00000000000000000000001, C00000000000000000000002, C00000000000000000000003,
+				C00000000000000000000004, C00000000000000000000005, C00000000000000000000006,
+				C00000000000000000000007, C00000000000000000000008, C00000000000000000000009,
+				C0000000000000000000000A, C0000000000000000000000B, C0000000000000000000000C,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A00000000000000000000003;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A00000000000000000000010, A00000000000000000000011, A00000000000000000000012);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000000000000000000063 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000064 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000065 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000060 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000061 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A00000000000000000000062 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A00000000000000000000033 = {isa = PBXTargetDependency; target = A00000000000000000000010; targetProxy = A00000000000000000000031; };
+		A00000000000000000000034 = {isa = PBXTargetDependency; target = A00000000000000000000010; targetProxy = A00000000000000000000032; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E00000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone";}; name = Debug;};
+		E00000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SDKROOT = iphoneos; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; VALIDATE_PRODUCT = YES;}; name = Release;};
+		E00000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_PREVIEWS = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = App/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1;}; name = Debug;};
+		E00000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = App/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1;}; name = Release;};
+		E00000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IOSRevampFoundation.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IOSRevampFoundation";}; name = Debug;};
+		E00000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/IOSRevampFoundation.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/IOSRevampFoundation";}; name = Release;};
+		E00000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_TARGET_NAME = IOSRevampFoundation;}; name = Debug;};
+		E00000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 16.0; PRODUCT_BUNDLE_IDENTIFIER = com.wendrawang.iosrevampfoundation.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_TARGET_NAME = IOSRevampFoundation;}; name = Release;};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000000000000000000070 = {isa = XCConfigurationList; buildConfigurations = (E00000000000000000000001, E00000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		A00000000000000000000071 = {isa = XCConfigurationList; buildConfigurations = (E00000000000000000000003, E00000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		A00000000000000000000072 = {isa = XCConfigurationList; buildConfigurations = (E00000000000000000000005, E00000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+		A00000000000000000000073 = {isa = XCConfigurationList; buildConfigurations = (E00000000000000000000007, E00000000000000000000008); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		C00000000000000000000001 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/PlatformKit;};
+		C00000000000000000000002 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/DesignSystem;};
+		C00000000000000000000003 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/SecureWebKit;};
+		C00000000000000000000004 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/AuthenticationFeature;};
+		C00000000000000000000005 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/DashboardFeature;};
+		C00000000000000000000006 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/FinancialHubFeature;};
+		C00000000000000000000007 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/TransferFeature;};
+		C00000000000000000000008 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/WealthFeature;};
+		C00000000000000000000009 = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/ScanFeature;};
+		C0000000000000000000000A = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/RewardsFeature;};
+		C0000000000000000000000B = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/MoreFeature;};
+		C0000000000000000000000C = {isa = XCLocalSwiftPackageReference; relativePath = Packages/Features/UpgradeServiceFeature;};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D00000000000000000000001 = {isa = XCSwiftPackageProductDependency; productName = CoreLogging;};
+		D00000000000000000000002 = {isa = XCSwiftPackageProductDependency; productName = CoreAnalytics;};
+		D00000000000000000000003 = {isa = XCSwiftPackageProductDependency; productName = CoreFeatureFlags;};
+		D00000000000000000000004 = {isa = XCSwiftPackageProductDependency; productName = CoreSecurity;};
+		D00000000000000000000005 = {isa = XCSwiftPackageProductDependency; productName = CoreSession;};
+		D00000000000000000000006 = {isa = XCSwiftPackageProductDependency; productName = DesignSystem;};
+		D00000000000000000000007 = {isa = XCSwiftPackageProductDependency; productName = SecureWebKit;};
+		D00000000000000000000008 = {isa = XCSwiftPackageProductDependency; productName = AuthenticationFeature;};
+		D00000000000000000000009 = {isa = XCSwiftPackageProductDependency; productName = DashboardFeature;};
+		D0000000000000000000000A = {isa = XCSwiftPackageProductDependency; productName = FinancialHubFeature;};
+		D0000000000000000000000B = {isa = XCSwiftPackageProductDependency; productName = TransferFeature;};
+		D0000000000000000000000C = {isa = XCSwiftPackageProductDependency; productName = WealthFeature;};
+		D0000000000000000000000D = {isa = XCSwiftPackageProductDependency; productName = ScanFeature;};
+		D0000000000000000000000E = {isa = XCSwiftPackageProductDependency; productName = RewardsFeature;};
+		D0000000000000000000000F = {isa = XCSwiftPackageProductDependency; productName = MoreFeature;};
+		D00000000000000000000010 = {isa = XCSwiftPackageProductDependency; productName = UpgradeServiceFeature;};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A00000000000000000000001;
+}
